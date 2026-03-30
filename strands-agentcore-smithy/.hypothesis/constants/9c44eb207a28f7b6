@@ -1,0 +1,4 @@
+# file: /Users/mjhume/Desktop/mac-back-up-4-11-2024/Work-Folders/KIRO-DEV/strands-agentcore-smithy/src/shared/jwt_utils.py
+# hypothesis_version: 6.151.9
+
+['JWT decode error: %s', 'RS256', 'Token has expired', 'access', 'cognito:username', 'id', 'token_use', 'verify_aud', 'verify_exp', 'verify_signature']

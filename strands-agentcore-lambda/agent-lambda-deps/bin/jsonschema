@@ -1,0 +1,6 @@
+#!/Users/mjhume/Desktop/mac-back-up-4-11-2024/Work-Folders/KIRO-DEV/strands-agentcore-lambda/venv/bin/python3.14
+import sys
+from jsonschema.cli import main
+if __name__ == '__main__':
+    sys.argv[0] = sys.argv[0].removesuffix('.exe')
+    sys.exit(main())
