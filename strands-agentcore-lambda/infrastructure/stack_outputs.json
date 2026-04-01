@@ -1,7 +1,0 @@
-{
-  "CognitoUserPoolId": "us-east-1_XtRn5TM6K",
-  "ToolLambdaArn": "arn:aws:lambda:us-east-1:581571671018:function:test-tool-lambda",
-  "GatewayId": "test-ai-agent-gateway-l6qyhkdcmr",
-  "AgentLambdaArn": "arn:aws:lambda:us-east-1:581571671018:function:test-agent-lambda",
-  "InterceptorLambdaArn": "arn:aws:lambda:us-east-1:581571671018:function:test-interceptor-lambda"
-}

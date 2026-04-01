@@ -19,6 +19,7 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+*.pyc
 
 # Virtual environments
 venv/
@@ -55,10 +56,13 @@ samconfig.toml
 .env.local
 
 # Lambda deployment artifacts
-*-lambda-package/
-*-lambda-deployment.zip
-agent-deployment-*.zip
-tool-deployment-*.zip
+*-deps/
+*-package/
+*.zip
 
-# Credentials (keep test_credentials.json for local testing)
+# Credentials
 jwt_tokens.json
+test_credentials.json
+
+# Generated outputs
+infrastructure/stack_outputs.json

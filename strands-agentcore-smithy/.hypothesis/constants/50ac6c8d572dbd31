@@ -1,4 +1,0 @@
-# file: /Users/mjhume/Desktop/mac-back-up-4-11-2024/Work-Folders/KIRO-DEV/strands-agentcore-smithy/src/shared/error_utils.py
-# hypothesis_version: 6.151.9
-
-[401, 500, 'Error [%d]: %s', 'Unauthorized']
