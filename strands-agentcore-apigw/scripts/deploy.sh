@@ -21,6 +21,7 @@ REGION="us-east-1"
 S3_BUCKET=""
 ENVIRONMENT_NAME=""
 WEATHER_API_KEY=""
+BEDROCK_MODEL_ID="us.anthropic.claude-sonnet-4-6"
 TEMPLATE_FILE="infrastructure/cloudformation-template.yaml"
 
 # -------------------------------------------------------
@@ -44,9 +45,13 @@ while [[ $# -gt 0 ]]; do
       S3_BUCKET="$2"
       shift 2
       ;;
+    --bedrock-model-id)
+      BEDROCK_MODEL_ID="$2"
+      shift 2
+      ;;
     *)
       echo "Unknown parameter: $1"
-      echo "Usage: $0 --environment-name NAME --weather-api-key KEY [--region REGION] [--s3-bucket BUCKET]"
+      echo "Usage: $0 --environment-name NAME --weather-api-key KEY [--region REGION] [--s3-bucket BUCKET] [--bedrock-model-id MODEL_ID]"
       exit 1
       ;;
   esac
@@ -75,6 +80,7 @@ echo "============================================="
 echo " Environment : ${ENVIRONMENT_NAME}"
 echo " Region      : ${REGION}"
 echo " Stack       : ${STACK_NAME}"
+echo " Model       : ${BEDROCK_MODEL_ID}"
 echo " S3 Bucket   : ${S3_BUCKET:-<none — direct upload>}"
 echo "============================================="
 
@@ -154,7 +160,8 @@ if [[ "${STACK_EXISTS}" == "DOES_NOT_EXIST" ]]; then
     --region "${REGION}" \
     --parameters \
       ParameterKey=EnvironmentName,ParameterValue="${ENVIRONMENT_NAME}" \
-      ParameterKey=WeatherApiKeySecretArn,ParameterValue="${WEATHER_SECRET_ARN}" > /dev/null
+      ParameterKey=WeatherApiKeySecretArn,ParameterValue="${WEATHER_SECRET_ARN}" \
+      ParameterKey=BedrockModelId,ParameterValue="${BEDROCK_MODEL_ID}" > /dev/null
 
   echo "    Waiting for stack creation to complete..."
   aws cloudformation wait stack-create-complete \
@@ -170,6 +177,7 @@ else
     --parameters \
       ParameterKey=EnvironmentName,ParameterValue="${ENVIRONMENT_NAME}" \
       ParameterKey=WeatherApiKeySecretArn,ParameterValue="${WEATHER_SECRET_ARN}" \
+      ParameterKey=BedrockModelId,ParameterValue="${BEDROCK_MODEL_ID}" \
       ParameterKey=CredentialProviderArn,UsePreviousValue=true > /dev/null 2>&1 || {
         echo "    No updates to perform (stack is already up to date)."
       }
@@ -308,6 +316,7 @@ if [[ -n "${CRED_PROVIDER_ARN}" && "${CRED_PROVIDER_ARN}" != "None" ]]; then
     --parameters \
       ParameterKey=EnvironmentName,ParameterValue="${ENVIRONMENT_NAME}" \
       ParameterKey=WeatherApiKeySecretArn,ParameterValue="${WEATHER_SECRET_ARN}" \
+      ParameterKey=BedrockModelId,ParameterValue="${BEDROCK_MODEL_ID}" \
       ParameterKey=CredentialProviderArn,ParameterValue="${CRED_PROVIDER_ARN}" > /dev/null 2>&1 || {
         echo "    No stack updates needed."
       }

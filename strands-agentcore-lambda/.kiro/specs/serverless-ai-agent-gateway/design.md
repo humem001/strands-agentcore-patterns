@@ -208,7 +208,7 @@ def lambda_handler(event: dict, context: LambdaContext) -> dict:
 - `COGNITO_JWKS_URL`: Cognito discovery URL for JWT validation
 - `GATEWAY_ID`: AgentCore Gateway identifier
 - `MEMORY_ID`: AgentCore Memory identifier
-- `BEDROCK_MODEL_ID`: Claude model identifier (anthropic.claude-3-sonnet-20240229-v1:0)
+- `BEDROCK_MODEL_ID`: Claude model identifier (us.anthropic.claude-sonnet-4-6)
 - `AWS_REGION`: Deployment region (us-east-1)
 
 ### AgentCore Gateway

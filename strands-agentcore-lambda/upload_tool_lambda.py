@@ -20,7 +20,7 @@ def upload_tool_lambda():
     outputs_file = Path("infrastructure/stack_outputs.json")
     if not outputs_file.exists():
         print(f"✗ Stack outputs not found: {outputs_file}")
-        print("  Run: python infrastructure/deploy_stack.py")
+        print("  Run: python3 infrastructure/deploy_stack.py")
         return False
     
     with open(outputs_file) as f:
@@ -39,7 +39,7 @@ def upload_tool_lambda():
     zip_file = Path("tool-lambda-deployment.zip")
     if not zip_file.exists():
         print(f"\n✗ Deployment package not found: {zip_file}")
-        print("  Run: python package_tool_lambda.py")
+        print("  Run: python3 package_tool_lambda.py")
         return False
     
     zip_size = zip_file.stat().st_size / (1024 * 1024)

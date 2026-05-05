@@ -252,6 +252,10 @@ def main():
                        help='Environment name')
     parser.add_argument('--region', default='us-east-1',
                        help='AWS region')
+    parser.add_argument('--bedrock-model-id', default='us.anthropic.claude-sonnet-4-6',
+                       help='Bedrock cross-region inference profile model ID')
+    parser.add_argument('--bedrock-base-model-id', default='anthropic.claude-sonnet-4-6',
+                       help='Bedrock base foundation model ID (without cross-region prefix)')
     parser.add_argument('--output-file', default='infrastructure/stack_outputs.json',
                        help='File to save stack outputs')
     
@@ -277,7 +281,9 @@ def main():
     
     # Prepare parameters
     parameters = {
-        'EnvironmentName': args.environment
+        'EnvironmentName': args.environment,
+        'BedrockModelId': args.bedrock_model_id,
+        'BedrockBaseModelId': args.bedrock_base_model_id,
     }
     
     # Deploy stack
@@ -296,10 +302,10 @@ def main():
         print("\n✓ Deployment completed successfully!")
         print(f"\nNext steps:")
         print(f"  1. Review outputs in: {args.output_file}")
-        print(f"  2. Package and upload Lambda code: python deploy_all.py")
-        print(f"  3. Create test user: python create_cognito_user.py")
-        print(f"  4. Run end-to-end test: python test_e2e_flow.py")
-        print(f"  5. (Optional) Validate deployment: python infrastructure/validate_deployment.py")
+        print(f"  2. Package and upload Lambda code: python3 deploy_all.py")
+        print(f"  3. Create test user: python3 create_cognito_user.py")
+        print(f"  4. Run end-to-end test: python3 test_e2e_flow.py")
+        print(f"  5. (Optional) Validate deployment: python3 infrastructure/validate_deployment.py")
     else:
         print("\n✗ Failed to retrieve stack outputs")
         sys.exit(1)

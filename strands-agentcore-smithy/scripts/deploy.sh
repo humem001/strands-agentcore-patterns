@@ -6,12 +6,12 @@ set -euo pipefail
 # ============================================================
 # Orchestrates the full deployment lifecycle:
 #   1. Validate CloudFormation template
-#   2. Deploy CloudFormation stack (create or update)
-#   3. Package Lambda code (two-step pip3 install)
-#   4. Deploy Lambda code (S3 fallback if >50MB)
-#   5. Create Cognito test user
-#   5. Create Cognito test user
-#   6. Generate scripts/test.sh
+#   2. Upload Smithy model to S3
+#   3. Deploy CloudFormation stack (create or update)
+#   4. Package Lambda code (two-step pip3 install)
+#   5. Deploy Lambda code (S3 fallback if >50MB)
+#   6. Create Cognito test user
+#   7. Generate scripts/test.sh
 # ============================================================
 
 STACK_NAME="${STACK_NAME:-agentcore-smithy-bedrock}"
@@ -35,10 +35,10 @@ aws cloudformation validate-template \
 echo "Template validation successful."
 
 # ============================================================
-# Step 1b: Upload official Smithy model to S3
+# Step 2: Upload official Smithy model to S3
 # ============================================================
 echo ""
-echo ">>> Step 1b: Uploading Bedrock Runtime Smithy model to S3..."
+echo ">>> Step 2: Uploading Bedrock Runtime Smithy model to S3..."
 SMITHY_BUCKET="${STACK_NAME}-smithy-models"
 SMITHY_MODEL_URL="https://raw.githubusercontent.com/aws/api-models-aws/main/models/bedrock-runtime/service/2023-09-30/bedrock-runtime-2023-09-30.json"
 SMITHY_MODEL_FILE="/tmp/bedrock-runtime-2023-09-30.json"
@@ -52,7 +52,7 @@ echo "Smithy model uploaded to s3://${SMITHY_BUCKET}/bedrock-runtime-2023-09-30.
 # Step 2: Deploy CloudFormation stack (create or update)
 # ============================================================
 echo ""
-echo ">>> Step 2: Deploying CloudFormation stack..."
+echo ">>> Step 3: Deploying CloudFormation stack..."
 
 STACK_STATUS=$(aws cloudformation describe-stacks \
     --stack-name "${STACK_NAME}" \
@@ -152,7 +152,7 @@ echo "Lambda Function: ${LAMBDA_FUNCTION_NAME}"
 # Step 3: Package Lambda code (two-step pip3 install)
 # ============================================================
 echo ""
-echo ">>> Step 3: Packaging Lambda code..."
+echo ">>> Step 4: Packaging Lambda code..."
 
 PACKAGE_DIR=$(mktemp -d)
 echo "Using temp directory: ${PACKAGE_DIR}"
@@ -189,7 +189,7 @@ echo "Creating zip package..."
 # Step 4: Deploy Lambda code (S3 fallback if >50MB)
 # ============================================================
 echo ""
-echo ">>> Step 4: Deploying Lambda code..."
+echo ">>> Step 5: Deploying Lambda code..."
 
 # Get file size (macOS and Linux compatible)
 ZIP_SIZE=$(stat -f%z "${ZIP_FILE}" 2>/dev/null || stat -c%s "${ZIP_FILE}")
@@ -279,7 +279,7 @@ BAKED_VALUES_EOF
 # Append the rest of the script logic using a non-expanding heredoc
 cat >> scripts/test.sh << 'TESTSCRIPT_LOGIC_EOF'
 
-PROMPT="${1:-Use the invoke model tool to ask Claude Haiku to write a short poem about the sky}"
+PROMPT="${1:-Use the invoke model tool to ask Claude Haiku to write a short poem about the Beatles}"
 
 echo "============================================================"
 echo "Testing AgentCore Smithy Bedrock Agent"
@@ -356,5 +356,5 @@ echo "============================================================"
 echo ""
 echo "To test the agent, run:"
 echo "  ./scripts/test.sh"
-echo "  ./scripts/test.sh \"Use the invoke model tool to ask Haiku to write a haiku about clouds\""
+echo "  ./scripts/test.sh \"Use the invoke model tool to ask Haiku to write a short poem about the Beatles\""
 echo ""

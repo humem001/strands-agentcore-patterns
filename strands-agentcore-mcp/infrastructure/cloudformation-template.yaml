@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: >
-  strands-agentcore-mcp — Serverless AI agent using Strands SDK + Claude 3 Sonnet,
+  strands-agentcore-mcp — Serverless AI agent using Strands SDK + Claude Sonnet 4.5,
   backed by AgentCore Gateway (MCP target), API Gateway, MCP Server Lambda, and DynamoDB.
 
 # ---------------------------------------------------------------------------
@@ -16,6 +16,13 @@ Parameters:
     Type: String
     Default: agentcore-mcp-user-pool
     Description: Name for the Cognito User Pool.
+
+  BedrockModelId:
+    Type: String
+    Default: us.anthropic.claude-sonnet-4-5-20250929-v1:0
+    Description: >
+      Bedrock model ID for the Agent Lambda. Override to swap models without
+      code changes (e.g. a newer Claude Sonnet version).
 
   ProductTableName:
     Type: String
@@ -365,6 +372,8 @@ Resources:
           COGNITO_USER_POOL_ID: !Ref CognitoUserPool
           # Cognito App Client ID (available to handler if needed)
           COGNITO_CLIENT_ID: !Ref CognitoUserPoolClient
+          # Bedrock model ID — change via stack parameter to swap models without code changes
+          BEDROCK_MODEL_ID: !Ref BedrockModelId
       # Placeholder inline code — deploy.sh replaces via update-function-code
       Code:
         ZipFile: |

@@ -13,8 +13,8 @@ from strands.tools.mcp import MCPClient
 
 logger = logging.getLogger(__name__)
 
-# Default Bedrock model ID for Claude 3 Sonnet
-DEFAULT_MODEL_ID = "us.anthropic.claude-3-sonnet-20240229-v1:0"
+# Default Bedrock model ID for Claude Sonnet 4.6
+DEFAULT_MODEL_ID = "us.anthropic.claude-sonnet-4-6"
 
 # Default AWS region for Bedrock
 DEFAULT_REGION = "us-east-1"

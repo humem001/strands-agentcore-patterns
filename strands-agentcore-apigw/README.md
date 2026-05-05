@@ -1,11 +1,11 @@
 # AgentCore API Gateway Weather Agent
 
-A serverless AI weather agent built on AWS Bedrock AgentCore. Uses the Strands SDK to orchestrate an LLM (Claude 3 Sonnet) that calls weather tools exposed through an AgentCore Gateway backed by API Gateway and WeatherAPI.com.
+A serverless AI weather agent built on AWS Bedrock AgentCore. Uses the Strands SDK to orchestrate an LLM (Claude Sonnet 4.6) that calls weather tools exposed through an AgentCore Gateway backed by API Gateway and WeatherAPI.com.
 
 ## Architecture
 
 ```
-User → Lambda (Strands SDK + Claude 3 Sonnet)
+User → Lambda (Strands SDK + Claude Sonnet 4.6)
      → Cognito JWT authentication
      → AgentCore Gateway (MCP protocol, CUSTOM_JWT auth)
      → API Gateway REST API (API key auth via usage plan)
@@ -35,6 +35,17 @@ The LLM decides which tool to call. AgentCore auto-discovers available tools fro
   --s3-bucket YOUR_S3_BUCKET
 ```
 
+The default LLM is `us.anthropic.claude-sonnet-4-6`. To use a different model, add `--bedrock-model-id`:
+
+```bash
+./scripts/deploy.sh \
+  --environment-name dev \
+  --weather-api-key YOUR_WEATHERAPI_KEY \
+  --bedrock-model-id us.anthropic.claude-haiku-4-5-20251001-v1:0
+```
+
+See [Changing the Model](#changing-the-model) for available model IDs.
+
 The script handles everything in order:
 1. Validates the CloudFormation template
 2. Creates Secrets Manager secrets (WeatherAPI key + API Gateway key)
@@ -63,6 +74,7 @@ The test script authenticates via Cognito, gets an ID token, and invokes the Lam
 | `--weather-api-key` | Yes | Your WeatherAPI.com API key |
 | `--region` | No | AWS region (default: `us-east-1`) |
 | `--s3-bucket` | No | S3 bucket for Lambda packages >50MB |
+| `--bedrock-model-id` | No | Bedrock model ID (default: `us.anthropic.claude-sonnet-4-6`) |
 
 
 ## Project Structure
@@ -95,7 +107,78 @@ The test script authenticates via Cognito, gets an ID token, and invokes the Lam
 └── README.md
 ```
 
-## Teardown
+## Changing the Model
+
+The model is controlled by the `--bedrock-model-id` parameter. Claude Sonnet 4.6 and newer models on Bedrock **require a cross-region inference profile ID** — using the bare `anthropic.*` model ID will result in a `ValidationException`.
+
+Profile IDs follow the pattern `<routing>.<model-id>`:
+- `us.*` — routes within the US (lower latency for US-based workloads)
+- `global.*` — routes globally (higher availability)
+
+### Available Claude 4.x inference profiles
+
+| Profile ID | Model |
+|------------|-------|
+| `us.anthropic.claude-sonnet-4-6` | Claude Sonnet 4.6 (US) — **default** |
+| `global.anthropic.claude-sonnet-4-6` | Claude Sonnet 4.6 (Global) |
+| `us.anthropic.claude-sonnet-4-5-20250929-v1:0` | Claude Sonnet 4.5 (US) |
+| `us.anthropic.claude-sonnet-4-20250514-v1:0` | Claude Sonnet 4 (US) |
+| `us.anthropic.claude-opus-4-7` | Claude Opus 4.7 (US) |
+| `us.anthropic.claude-haiku-4-5-20251001-v1:0` | Claude Haiku 4.5 (US) — fastest/cheapest |
+
+### Example
+
+```bash
+./scripts/deploy.sh \
+  --environment-name dev \
+  --weather-api-key YOUR_WEATHERAPI_KEY \
+  --bedrock-model-id us.anthropic.claude-haiku-4-5-20251001-v1:0
+```
+
+### Changing the model on an existing deployment
+
+Re-run `deploy.sh` with the new model ID — no teardown needed. The script updates the CloudFormation stack and redeploys the Lambda:
+
+```bash
+./scripts/deploy.sh \
+  --environment-name dev \
+  --weather-api-key YOUR_WEATHERAPI_KEY \
+  --bedrock-model-id us.anthropic.claude-opus-4-7
+```
+
+Alternatively, update just the Lambda environment variable directly (faster, skips infrastructure steps):
+
+```bash
+# 1. Get current environment variables
+CURRENT_ENV=$(aws lambda get-function-configuration \
+  --function-name dev-weather-agent \
+  --region us-east-1 \
+  --query 'Environment.Variables' --output json)
+
+# 2. Update BEDROCK_MODEL_ID in place
+NEW_ENV=$(echo $CURRENT_ENV | python3 -c "
+import json, sys
+env = json.load(sys.stdin)
+env['BEDROCK_MODEL_ID'] = 'us.anthropic.claude-opus-4-7'
+print(json.dumps({'Variables': env}))
+")
+
+# 3. Apply
+aws lambda update-function-configuration \
+  --function-name dev-weather-agent \
+  --environment "$NEW_ENV" \
+  --region us-east-1
+```
+
+To list all available inference profiles in your account:
+
+```bash
+aws bedrock list-inference-profiles --region us-east-1 \
+  --query "inferenceProfileSummaries[].{id:inferenceProfileId,name:inferenceProfileName}" \
+  --output table
+```
+
+
 
 ```bash
 # Delete credential provider (not managed by CloudFormation)
@@ -132,3 +215,4 @@ python -m pytest tests/unit/test_properties.py -v
 - **JWT validation**: Accepts both access and ID tokens. Audience verification is disabled (AgentCore Gateway handles it via `AllowedAudience`)
 - **Credential provider**: Not a CloudFormation resource — managed via CLI. The deploy script auto-detects CLI support and creates/updates it, with fallback to manual instructions
 - **Region**: Must be `us-east-1` (AgentCore availability)
+- **Bedrock model ID — inference profile required**: Claude Sonnet 4.6 does not support direct on-demand invocation on Bedrock. You must use a cross-region inference profile ID. The default is `us.anthropic.claude-sonnet-4-6` (US profile). Using the bare `anthropic.claude-sonnet-4-6` ID will result in a `ValidationException`. If you need global routing, use `global.anthropic.claude-sonnet-4-6` instead.

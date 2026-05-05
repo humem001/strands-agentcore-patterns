@@ -2,7 +2,7 @@
 
 ## Overview
 
-This design describes a serverless AI weather agent built on AWS Bedrock AgentCore Gateway using the API Gateway target type. The system enables users to ask natural language weather questions, which are processed by a Strands SDK agent (Claude 3 Sonnet) that invokes weather tools discovered automatically from an API Gateway REST API via AgentCore's `GetExportAPI` mechanism.
+This design describes a serverless AI weather agent built on AWS Bedrock AgentCore Gateway using the API Gateway target type. The system enables users to ask natural language weather questions, which are processed by a Strands SDK agent (Claude Sonnet 4.6) that invokes weather tools discovered automatically from an API Gateway REST API via AgentCore's `GetExportAPI` mechanism.
 
 The architecture has five layers:
 
@@ -34,7 +34,7 @@ The credential provider cannot be created via CloudFormation and requires a mult
 
 ```mermaid
 graph TB
-    User[User / Client] -->|POST with JWT| AgentLambda[Agent Lambda<br/>Strands SDK + Claude 3 Sonnet]
+    User[User / Client] -->|POST with JWT| AgentLambda[Agent Lambda<br/>Strands SDK + Claude Sonnet 4.6]
     
     AgentLambda -->|Validate JWT| Cognito[Cognito User Pool]
     AgentLambda -->|MCP over HTTP<br/>Bearer JWT| Gateway[AgentCore Gateway<br/>CUSTOM_JWT Auth]

@@ -9,7 +9,7 @@ Durable patterns and gotchas for this project. These apply to all code, infrastr
 ## Architecture at a Glance
 
 ```
-User → Agent Lambda (Strands SDK + Claude 3 Sonnet)
+User → Agent Lambda (Strands SDK + Claude Sonnet 4.5)
      → Cognito JWT (ID or access tokens)
      → AgentCore Gateway (CUSTOM_JWT authorizer)
      → MCP Target (HTTPS URL)
@@ -18,7 +18,8 @@ User → Agent Lambda (Strands SDK + Claude 3 Sonnet)
          → DynamoDB (Product_Table)
 ```
 
-Region: `us-east-1`. Model: Claude 3 Sonnet on Bedrock.
+Region: `us-east-1`. Model: Claude Sonnet 4.5 (`us.anthropic.claude-sonnet-4-5-20250929-v1:0`) on Bedrock.
+Configurable via the `BEDROCK_MODEL_ID` Lambda environment variable or the `BedrockModelId` CloudFormation parameter — no code change needed to swap models.
 
 ## Why API Gateway Sits in Front of the MCP Lambda
 
@@ -32,7 +33,7 @@ The LLM — not the Lambda — decides which tool to invoke. The Strands SDK orc
 
 1. Agent Lambda receives a user prompt and establishes an MCP client session against AgentCore Gateway
 2. Strands SDK calls `tools/list` over MCP to fetch the tool catalog (name, description, `inputSchema`)
-3. Strands SDK passes the prompt, system prompt, and tool schemas to Claude 3 Sonnet via Bedrock
+3. Strands SDK passes the prompt, system prompt, and tool schemas to Claude Sonnet 4.5 via Bedrock
 4. The **model** returns a tool-use decision (which tool to call and with which arguments) or a final answer
 5. If a tool call was requested, Strands SDK issues `tools/call` over MCP; the Gateway forwards to the MCP server Lambda, which executes the tool and returns a result
 6. The tool result is fed back into the model; repeat until the model returns a final answer

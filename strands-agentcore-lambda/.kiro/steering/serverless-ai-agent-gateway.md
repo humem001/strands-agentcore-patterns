@@ -120,7 +120,7 @@ Use Claude 3 Sonnet with proper tool definitions:
 # GOOD: Pass tool definitions from Gateway
 tools = query_gateway_tools(gateway_id, jwt_token)
 response = bedrock_client.invoke_model(
-    modelId='anthropic.claude-3-sonnet-20240229-v1:0',
+    modelId='us.anthropic.claude-sonnet-4-6',
     body=json.dumps({
         'messages': messages,
         'tools': tools,
@@ -130,7 +130,7 @@ response = bedrock_client.invoke_model(
 
 # BAD: Hardcoded tools or missing tool definitions
 response = bedrock_client.invoke_model(
-    modelId='anthropic.claude-3-sonnet-20240229-v1:0',
+    modelId='us.anthropic.claude-sonnet-4-6',
     body=json.dumps({'messages': messages})
 )
 ```

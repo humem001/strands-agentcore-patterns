@@ -21,7 +21,7 @@ from .agent_processor import AgentProcessor
 COGNITO_JWKS_URL = os.environ.get("COGNITO_JWKS_URL", "")
 GATEWAY_ID = os.environ.get("GATEWAY_ID", "")
 BEDROCK_MODEL_ID = os.environ.get(
-    "BEDROCK_MODEL_ID", "anthropic.claude-3-sonnet-20240229-v1:0"
+    "BEDROCK_MODEL_ID", "us.anthropic.claude-sonnet-4-6"
 )
 AWS_REGION = os.environ.get("AWS_REGION", "us-east-1")
 LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")

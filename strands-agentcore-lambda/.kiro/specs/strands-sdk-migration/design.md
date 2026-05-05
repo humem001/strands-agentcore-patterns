@@ -115,7 +115,7 @@ def create_agent(
     """Create a Strands Agent with BedrockModel and MCPClient tool source.
     
     Args:
-        model_id: Bedrock model ID (e.g., anthropic.claude-3-sonnet-20240229-v1:0)
+        model_id: Bedrock model ID (e.g., us.anthropic.claude-sonnet-4-6)
         region: AWS region for Bedrock
         mcp_client: MCPClient instance for tool discovery/execution
         system_prompt: Optional override for SYSTEM_PROMPT

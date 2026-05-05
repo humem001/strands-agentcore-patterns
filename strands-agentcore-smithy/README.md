@@ -1,24 +1,24 @@
 # AgentCore Smithy Bedrock Runtime
 
-A serverless AI agent that uses AWS Bedrock AgentCore Gateway with a Smithy model target to call Bedrock Runtime. The agent (Claude 3 Sonnet) calls another model (Claude 3 Haiku) as a tool via the gateway's Converse API.
+A serverless AI agent that uses AWS Bedrock AgentCore Gateway with a Smithy model target to call Bedrock Runtime. The agent (Claude Sonnet 4.6) calls another model (Claude Haiku 4.5) as a tool via the gateway's Converse API.
 
 ## Architecture
 
 ```
 User → test.sh (Cognito auth + Lambda invoke)
-     → Agent Lambda (Strands SDK + Claude 3 Sonnet)
+     → Agent Lambda (Strands SDK + Claude Sonnet 4.6)
      → AgentCore Gateway (MCP protocol, CUSTOM_JWT authorizer)
      → Smithy Model Target (official Bedrock Runtime model from S3)
-     → Bedrock Runtime Converse API → Claude 3 Haiku
+     → Bedrock Runtime Converse API → Claude Haiku 4.5
 ```
 
 ## How It Works
 
 1. User authenticates with Cognito and invokes the Lambda with a natural language prompt
-2. The Lambda runs a Strands SDK agent with Claude 3 Sonnet as the LLM
+2. The Lambda runs a Strands SDK agent with Claude Sonnet 4.6 as the LLM
 3. The agent connects to AgentCore Gateway via MCP and discovers available tools
 4. The gateway reads the official Bedrock Runtime Smithy model (from S3) and exposes operations as MCP tools
-5. Sonnet decides to call the Converse tool, passing the user's prompt to Claude 3 Haiku
+5. Sonnet decides to call the Converse tool, passing the user's prompt to Claude Haiku 4.5
 6. The gateway assumes its IAM execution role, signs the request, and calls Bedrock Runtime
 7. Haiku's response flows back through the gateway → MCP → agent → user
 
@@ -28,7 +28,7 @@ User → test.sh (Cognito auth + Lambda invoke)
 - Python 3.12+
 - pip3
 - AWS account with Bedrock and AgentCore enabled in `us-east-1`
-- Bedrock model access enabled for Claude 3 Sonnet and Claude 3 Haiku
+- Bedrock model access enabled for Claude Sonnet 4.6 and Claude Haiku 4.5
 
 ## Deploy
 
@@ -51,7 +51,7 @@ This will:
 After deployment, test with:
 
 ```bash
-./scripts/test.sh "Ask Haiku to write a haiku about clouds"
+./scripts/test.sh "Ask Haiku to write a short poem about the Beatles"
 ```
 
 Or use the default prompt:
@@ -85,6 +85,49 @@ Or use the default prompt:
 ├── requirements.txt                       # Lambda runtime dependencies
 └── README.md
 ```
+
+## Changing the Outer Agent Model
+
+The outer agent model is set in `src/agent/strands_client.py`:
+
+```python
+# Default Bedrock model ID for Claude Sonnet 4.6
+DEFAULT_MODEL_ID = "us.anthropic.claude-sonnet-4-6"
+```
+
+To use a different model, update `DEFAULT_MODEL_ID` to any Bedrock cross-region inference profile ID you have access to. For example:
+
+```python
+DEFAULT_MODEL_ID = "us.anthropic.claude-3-5-sonnet-20241022-v2:0"
+```
+
+Make sure the model is enabled in your AWS account under **Bedrock → Model access** before deploying.
+
+> **Note:** The inner model (the one the agent calls as a tool) is separate — it's configured in the `SYSTEM_PROMPT` string in `src/agent/agent_processor.py`. See [Changing the Inner Model](#changing-the-inner-model) and [Key Design Decisions](#key-design-decisions) for more detail.
+
+## Changing the Inner Model
+
+The inner model is the one the outer agent calls *as a tool* via the AgentCore Gateway. It's configured inside the `SYSTEM_PROMPT` string in `src/agent/agent_processor.py`:
+
+```python
+SYSTEM_PROMPT = """You have access to Bedrock Runtime tools via MCP. Use the Converse tool (not InvokeModel) to call another model.
+
+When using bedrock-runtime-target___Converse:
+- Set modelId to: anthropic.claude-haiku-4-5-20251001-v1:0
+...
+```
+
+To use a different model, replace the `modelId` value in that instruction:
+
+```python
+- Set modelId to: anthropic.claude-haiku-4-5-20251001-v1:0
+```
+
+A few things to keep in mind:
+
+- The model ID here is passed as a parameter in the MCP tool call, not used directly by the Lambda — so it must be a valid Bedrock `modelId` (not a cross-region inference profile).
+- Make sure the model supports the **Converse API** (most Claude models do, but check the [Bedrock docs](https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference-supported-models-features.html)).
+- Enable the model in your AWS account under **Bedrock → Model access** before deploying.
 
 ## Key Design Decisions
 

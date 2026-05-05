@@ -7,14 +7,14 @@ set -euo pipefail
 # ============================================================
 
 REGION="us-east-1"
-GATEWAY_ID="smithy-bedrock-gateway-fwrdlxqan6"
-COGNITO_USER_POOL_ID="us-east-1_thgqAxKUi"
-COGNITO_CLIENT_ID="11missdstl6jdrc6v4aeqp43k0"
+GATEWAY_ID="smithy-bedrock-gateway-rgzjldkdnc"
+COGNITO_USER_POOL_ID="us-east-1_7zpibqmxx"
+COGNITO_CLIENT_ID="6jkkkmemo5j047148o479pv6ti"
 LAMBDA_FUNCTION_NAME="agentcore-smithy-bedrock-AgentFunction"
 TEST_USERNAME="testuser"
 TEST_PASSWORD="TestPass123!"
 
-PROMPT="${1:-Use the invoke model tool to ask Claude Haiku to write a short poem about the sky}"
+PROMPT="${1:-Use the invoke model tool to ask Claude Haiku to write a short poem about the Beatles}"
 
 echo "============================================================"
 echo "Testing AgentCore Smithy Bedrock Agent"

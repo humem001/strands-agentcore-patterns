@@ -253,7 +253,7 @@ def retrieve_conversation_context(
 - `GATEWAY_ID`: AgentCore Gateway ID
 - `MEMORY_ID`: AgentCore Memory ID
 - `COGNITO_JWKS_URL`: Cognito JWKS endpoint URL
-- `BEDROCK_MODEL_ID`: Claude model ID (anthropic.claude-3-sonnet-20240229-v1:0)
+- `BEDROCK_MODEL_ID`: Claude model ID (us.anthropic.claude-sonnet-4-6)
 - `LOG_LEVEL`: Logging level (INFO, DEBUG)
 
 **IAM Permissions**:

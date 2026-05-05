@@ -24,6 +24,10 @@ REGION="us-east-1"
 STACK_NAME="agentcore-mcp"
 TEMPLATE_FILE="infrastructure/cloudformation-template.yaml"
 
+# Bedrock model ID — change this to swap models without any code changes.
+# Must be a valid Bedrock cross-region inference profile or foundation model ARN.
+BEDROCK_MODEL_ID="us.anthropic.claude-sonnet-4-5-20250929-v1:0"
+
 # Test user credentials (baked into generated test.sh)
 TEST_USERNAME="testuser"
 TEST_PASSWORD="TestPass123!"
@@ -182,6 +186,7 @@ if [ "$STACK_ACTION" = "create" ]; then
     --stack-name "$STACK_NAME" \
     --template-body "file://${TEMPLATE_FILE}" \
     --capabilities CAPABILITY_NAMED_IAM \
+    --parameters "ParameterKey=BedrockModelId,ParameterValue=${BEDROCK_MODEL_ID}" \
     --region "$REGION"
   log "  Waiting for stack creation to complete..."
   aws cloudformation wait stack-create-complete \
@@ -194,6 +199,7 @@ else
       --stack-name "$STACK_NAME" \
       --template-body "file://${TEMPLATE_FILE}" \
       --capabilities CAPABILITY_NAMED_IAM \
+      --parameters "ParameterKey=BedrockModelId,ParameterValue=${BEDROCK_MODEL_ID}" \
       --region "$REGION" \
       2> "$TMP_UPDATE_ERR"; then
 

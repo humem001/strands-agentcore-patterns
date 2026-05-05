@@ -121,7 +121,7 @@ def package_agent_lambda():
     print("=" * 60)
     print(f"\nPackage: {zip_file}")
     print(f"Size: {zip_size:.2f} MB")
-    print("\nNext step: python upload_agent_lambda.py")
+    print("\nNext step: python3 upload_agent_lambda.py")
     
     return True
 

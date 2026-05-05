@@ -154,7 +154,7 @@ def create_test_user():
     print(f"Password: {password}")
     print(f"Email: {email}")
     print(f"\nCredentials saved to: test_credentials.json")
-    print("\nNext step: python test_e2e_flow.py")
+    print("\nNext step: python3 test_e2e_flow.py")
     
     return True
 

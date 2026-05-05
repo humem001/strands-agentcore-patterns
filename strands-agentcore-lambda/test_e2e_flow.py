@@ -28,7 +28,7 @@ def load_jwt_token():
             return tokens['access_token']
     except Exception as e:
         print(f"✗ Failed to load JWT token: {e}")
-        print("  Run: python create_cognito_user.py")
+        print("  Run: python3 create_cognito_user.py")
         sys.exit(1)
 
 def load_stack_outputs():

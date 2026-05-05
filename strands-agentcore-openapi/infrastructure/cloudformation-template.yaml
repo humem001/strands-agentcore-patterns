@@ -21,6 +21,11 @@ Parameters:
     Description: ARN of the API Key credential provider for WeatherAPI (created outside CloudFormation)
     Default: ''
 
+  BedrockModelId:
+    Type: String
+    Description: Bedrock model ID for the Agent Lambda
+    Default: 'us.anthropic.claude-sonnet-4-5-20250929-v1:0'
+
 Conditions:
   HasCredentialProvider: !Not [!Equals [!Ref CredentialProviderArn, '']]
 
@@ -164,7 +169,7 @@ Resources:
         Variables:
           COGNITO_JWKS_URL: !Sub 'https://cognito-idp.${AWS::Region}.amazonaws.com/${CognitoUserPool}/.well-known/jwks.json'
           GATEWAY_ID: !Ref AgentCoreGateway
-          BEDROCK_MODEL_ID: 'anthropic.claude-3-sonnet-20240229-v1:0'
+          BEDROCK_MODEL_ID: !Ref BedrockModelId
 
   # API Key Credential Provider for WeatherAPI
   # Created automatically by scripts/deploy.sh via bedrock-agentcore-control CLI

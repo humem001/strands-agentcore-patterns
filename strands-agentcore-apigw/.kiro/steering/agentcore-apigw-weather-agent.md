@@ -9,7 +9,7 @@ This project builds a serverless AI weather agent using AWS Bedrock AgentCore Ga
 ## Architecture
 
 ```
-User → Agent Lambda (Strands SDK / Bedrock Claude 3 Sonnet)
+User → Agent Lambda (Strands SDK / Bedrock Claude Sonnet 4.6)
      → Cognito JWT auth
      → AgentCore Gateway (CUSTOM_JWT, API Gateway target)
      → API Gateway REST API (API key validated via usage plan)

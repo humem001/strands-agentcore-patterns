@@ -2,13 +2,13 @@
 
 ## Introduction
 
-This feature builds a serverless AI agent that uses AWS Bedrock AgentCore Gateway with an API Gateway target type to proxy weather API requests. The Agent Lambda uses the Strands Agents SDK with Bedrock Claude 3 Sonnet for natural language processing. AgentCore Gateway auto-discovers operations from the API Gateway REST API via GetExportAPI, and uses an API Key credential provider for outbound authentication. Cognito provides JWT-based user authentication. The API Gateway REST API proxies requests to WeatherAPI.com, injecting the downstream API key separately from the AgentCore-to-API-Gateway key.
+This feature builds a serverless AI agent that uses AWS Bedrock AgentCore Gateway with an API Gateway target type to proxy weather API requests. The Agent Lambda uses the Strands Agents SDK with Bedrock Claude Sonnet 4.6 for natural language processing. AgentCore Gateway auto-discovers operations from the API Gateway REST API via GetExportAPI, and uses an API Key credential provider for outbound authentication. Cognito provides JWT-based user authentication. The API Gateway REST API proxies requests to WeatherAPI.com, injecting the downstream API key separately from the AgentCore-to-API-Gateway key.
 
 Existing reusable code in `handoff/src/shared/` (models, error handling, logging, JWT utils) and `handoff/src/agent/` (handler, agent_processor, strands_client) is carried forward. The new work covers CloudFormation infrastructure, deployment scripts, and tests.
 
 ## Glossary
 
-- **Agent_Lambda**: AWS Lambda function running the Strands Agents SDK with Bedrock Claude 3 Sonnet to process natural language weather queries
+- **Agent_Lambda**: AWS Lambda function running the Strands Agents SDK with Bedrock Claude Sonnet 4.6 to process natural language weather queries
 - **AgentCore_Gateway**: AWS Bedrock AgentCore Gateway configured with CUSTOM_JWT authorization and an API Gateway target
 - **API_Gateway_REST_API**: AWS API Gateway REST API exposing weather endpoints that proxy to WeatherAPI.com
 - **Credential_Provider**: AgentCore Identity credential provider (API_KEY type) that injects the x-api-key header into outbound requests from the Gateway to the API Gateway REST API

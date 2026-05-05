@@ -13,6 +13,10 @@ Parameters:
     Type: String
     Description: ARN of the manually-created AgentCore credential provider
     Default: ''
+  BedrockModelId:
+    Type: String
+    Description: Bedrock model ID for the agent LLM
+    Default: 'us.anthropic.claude-sonnet-4-6'
 
 Conditions:
   HasCredentialProvider: !Not [!Equals [!Ref CredentialProviderArn, '']]
@@ -200,7 +204,7 @@ Resources:
         Variables:
           GATEWAY_ID: !Ref AgentCoreGateway
           COGNITO_JWKS_URL: !Sub 'https://cognito-idp.${AWS::Region}.amazonaws.com/${CognitoUserPool}/.well-known/jwks.json'
-          BEDROCK_MODEL_ID: anthropic.claude-3-sonnet-20240229-v1:0
+          BEDROCK_MODEL_ID: !Ref BedrockModelId
           AWS_REGION_NAME: !Ref 'AWS::Region'
 
   # ============================================================

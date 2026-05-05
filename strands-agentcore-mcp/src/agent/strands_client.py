@@ -6,6 +6,7 @@ and are unaware of the target type behind the gateway.
 """
 
 import logging
+import os
 
 from mcp.client.streamable_http import streamablehttp_client
 from strands.models.bedrock import BedrockModel
@@ -13,8 +14,12 @@ from strands.tools.mcp import MCPClient
 
 logger = logging.getLogger(__name__)
 
-# Default Bedrock model ID for Claude Sonnet 4.5
-DEFAULT_MODEL_ID = "us.anthropic.claude-sonnet-4-5-20250929-v1:0"
+# Bedrock model ID — override via BEDROCK_MODEL_ID environment variable.
+# Defaults to Claude Sonnet 4.5 cross-region inference profile.
+DEFAULT_MODEL_ID = os.environ.get(
+    "BEDROCK_MODEL_ID",
+    "us.anthropic.claude-sonnet-4-5-20250929-v1:0",
+)
 
 # Default AWS region for Bedrock
 DEFAULT_REGION = "us-east-1"
@@ -52,10 +57,13 @@ def create_bedrock_model(
 ) -> BedrockModel:
     """Create a Bedrock model instance for the Strands Agent.
 
-    Configures Claude 3 Sonnet as the LLM provider via AWS Bedrock.
+    Configures Claude Sonnet 4.5 as the LLM provider via AWS Bedrock.
+    The model can be overridden at deploy time via the BEDROCK_MODEL_ID
+    environment variable without any code changes.
 
     Args:
-        model_id: Bedrock model identifier. Defaults to Claude 3 Sonnet.
+        model_id: Bedrock model identifier. Defaults to the value of the
+            BEDROCK_MODEL_ID env var, falling back to Claude Sonnet 4.5.
         region_name: AWS region for Bedrock API calls. Defaults to us-east-1.
 
     Returns:

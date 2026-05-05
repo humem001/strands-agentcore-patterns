@@ -88,7 +88,7 @@ Migrate the Agent Lambda from a manual Strands framework implementation (custom 
 1. THE CloudFormation_Template SHALL grant the Agent_Lambda IAM role the `bedrock:Converse` action
 2. THE CloudFormation_Template SHALL grant the Agent_Lambda IAM role the `bedrock:ConverseStream` action
 3. THE CloudFormation_Template SHALL retain the existing `bedrock:InvokeModel` and `bedrock:InvokeModelWithResponseStream` actions on the Agent_Lambda IAM role
-4. THE CloudFormation_Template SHALL scope all Bedrock model permissions to the foundation model resource ARN `arn:{Partition}:bedrock:{Region}::foundation-model/anthropic.claude-3-sonnet-20240229-v1:0`
+4. THE CloudFormation_Template SHALL scope all Bedrock model permissions to the inference profile resource ARN `arn:{Partition}:bedrock:{Region}:{AccountId}:inference-profile/us.anthropic.claude-sonnet-4-6`
 
 ### Requirement 7: Update Lambda Resource Configuration
 

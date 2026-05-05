@@ -17,7 +17,7 @@ User → Cognito (JWT) → Agent Lambda → AgentCore Gateway (MCP) → Intercep
 | Component | Description | Runtime |
 |-----------|-------------|---------|
 | Cognito User Pool | JWT access token authentication | Managed |
-| Agent Lambda | Strands Agent with Claude 3 Sonnet via BedrockModel, MCPClient for tool discovery/execution | Python 3.12, 1024MB, 120s |
+| Agent Lambda | Strands Agent with `us.anthropic.claude-sonnet-4-6` via BedrockModel, MCPClient for tool discovery/execution | Python 3.12, 1024MB, 120s |
 | AgentCore Gateway | MCP protocol gateway with CUSTOM_JWT authorizer and REQUEST interceptor | Managed |
 | Interceptor Lambda | Extracts JWT claims (`sub`, `username`, `client_id`) and injects `user_context` into tool arguments | Python 3.12, 128MB, 5s |
 | Tool Lambda | Executes AWS operations (S3 ListBuckets) with user attribution | Python 3.12, 256MB, 10s |
@@ -43,7 +43,7 @@ mcp_client = MCPClient(
 
 # Agent wires together model + tools
 agent = Agent(
-    model=BedrockModel(model_id="anthropic.claude-3-sonnet-20240229-v1:0", region_name="us-east-1"),
+    model=BedrockModel(model_id="us.anthropic.claude-sonnet-4-6", region_name="us-east-1"),
     tools=[mcp_client],
     system_prompt="You are a helpful AI assistant with access to tools...",
 )
@@ -98,8 +98,7 @@ Without the Interceptor, Tool Lambda would have no knowledge of which user initi
 │   ├── cloudformation-template.yaml  # All AWS resources
 │   ├── deploy_stack.py               # CloudFormation deployment
 │   ├── validate_template.py          # Template validation
-│   ├── validate_deployment.py        # Post-deploy resource checks
-│   └── DEPLOYMENT.md                 # Deployment guide and troubleshooting
+│   └── validate_deployment.py        # Post-deploy resource checks
 ├── agent-lambda-deps/            # Pre-built Linux wheels for Agent Lambda
 ├── agent-requirements.txt        # Agent Lambda pip dependencies
 ├── requirements.txt              # Dev/test dependencies
@@ -122,7 +121,7 @@ Without the Interceptor, Tool Lambda would have no knowledge of which user initi
 |---------|---------|
 | Cognito | User pool + app client for JWT access tokens |
 | Lambda (×3) | Agent, Interceptor, Tool functions |
-| Bedrock | Claude 3 Sonnet model invocation |
+| Bedrock | `us.anthropic.claude-sonnet-4-6` model invocation via cross-region inference profile |
 | BedrockAgentCore Gateway | MCP protocol gateway with JWT auth + interceptor |
 | BedrockAgentCore GatewayTarget | Lambda-backed MCP tool with inline schema |
 | IAM | Least-privilege roles per component |
@@ -143,15 +142,39 @@ No API Gateway, no VPC, no S3 for deployment artifacts.
 ### Step 1: Deploy CloudFormation Stack
 
 ```bash
-python infrastructure/deploy_stack.py
+python3 infrastructure/deploy_stack.py
 ```
 
 Creates all AWS resources (Cognito, Gateway, 3 Lambdas, IAM roles, CloudWatch). Takes ~5-10 minutes. Stack outputs saved to `infrastructure/stack_outputs.json`.
 
+To deploy with a different Bedrock model:
+
+```bash
+python3 infrastructure/deploy_stack.py --bedrock-model-id us.anthropic.claude-opus-4 --bedrock-base-model-id anthropic.claude-opus-4
+```
+
+Available options:
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `--stack-name` | `serverless-ai-agent-gateway-test` | CloudFormation stack name |
+| `--environment` | `test` | Environment prefix (`dev`, `test`, `prod`) |
+| `--region` | `us-east-1` | AWS region |
+| `--bedrock-model-id` | `us.anthropic.claude-sonnet-4-6` | Cross-region inference profile ID |
+| `--bedrock-base-model-id` | `anthropic.claude-sonnet-4-6` | Base foundation model ID |
+
+The `--bedrock-model-id` and `--bedrock-base-model-id` parameters control the `BEDROCK_MODEL_ID` Lambda env var and the IAM resource ARNs granting Bedrock invoke permissions.
+
+#### Validate Template First (Optional)
+
+```bash
+python3 infrastructure/validate_template.py
+```
+
 ### Step 2: Package and Upload Lambda Code
 
 ```bash
-python deploy_all.py
+python3 deploy_all.py
 ```
 
 This runs 6 scripts in sequence:
@@ -164,10 +187,12 @@ This runs 6 scripts in sequence:
 
 Lambda packaging uses `pip install --platform manylinux2014_x86_64 --python-version 3.12 --only-binary=:all:` to download pre-built Linux wheels from PyPI. No Docker required.
 
+> **Note:** Do not remove `.dist-info` directories from `agent-lambda-deps/` — opentelemetry needs them for `importlib.metadata.entry_points()` discovery.
+
 ### Step 3: Create Test User
 
 ```bash
-python create_cognito_user.py
+python3 create_cognito_user.py
 ```
 
 Creates a confirmed user in the Cognito User Pool.
@@ -175,16 +200,58 @@ Creates a confirmed user in the Cognito User Pool.
 ### Step 4: Run End-to-End Test
 
 ```bash
-python test_e2e_flow.py
+python3 test_e2e_flow.py
 ```
 
 Validates the complete flow: Cognito auth → Agent Lambda → Strands Agent → Gateway MCP → Interceptor → Tool Lambda → S3 → response with user context.
 
+### Step 5: Validate Deployment (Optional)
+
+```bash
+python3 infrastructure/validate_deployment.py
+```
+
+Checks Gateway configuration, Lambda env vars, IAM permissions, CloudWatch logging, and that no Lambdas are attached to a VPC.
+
 ### Teardown
 
 ```bash
-aws cloudformation delete-stack --stack-name dev-ai-agent-gateway --region us-east-1
+aws cloudformation delete-stack --stack-name serverless-ai-agent-gateway-test --region us-east-1
+aws cloudformation wait stack-delete-complete --stack-name serverless-ai-agent-gateway-test --region us-east-1
 ```
+
+## Stack Outputs
+
+After deployment, review outputs:
+
+```bash
+cat infrastructure/stack_outputs.json
+```
+
+Key outputs: `GatewayId`, `CognitoUserPoolId`, `AgentLambdaArn`, `InterceptorLambdaArn`, `ToolLambdaArn`.
+
+## Redeployment
+
+After modifying source code only:
+```bash
+python3 deploy_all.py
+```
+
+After modifying `cloudformation-template.yaml`:
+```bash
+python3 infrastructure/deploy_stack.py
+python3 deploy_all.py
+```
+
+## Required AWS Permissions
+
+- CloudFormation: create/update/delete stacks
+- Lambda: create/update functions, update function code
+- IAM: create roles and policies
+- CloudWatch Logs: create log groups
+- BedrockAgentCore: create Gateway, GatewayTarget
+- Cognito: create user pools, manage users
+- Bedrock: invoke models
 
 ## Testing
 
@@ -229,7 +296,7 @@ jwt_token = auth['AuthenticationResult']['AccessToken']
 # Invoke Agent Lambda
 lambda_client = boto3.client('lambda', region_name='us-east-1')
 response = lambda_client.invoke(
-    FunctionName='dev-agent-lambda',
+    FunctionName='test-agent-lambda',
     Payload=json.dumps({
         'headers': {'Authorization': f'Bearer {jwt_token}'},
         'body': json.dumps({'prompt': 'List my S3 buckets'})
@@ -247,10 +314,29 @@ print(body['user_context'])
 ## Viewing Logs
 
 ```bash
-aws logs tail /aws/lambda/dev-agent-lambda --follow
-aws logs tail /aws/lambda/dev-interceptor-lambda --follow
-aws logs tail /aws/lambda/dev-tool-lambda --follow
+aws logs tail /aws/lambda/test-agent-lambda --follow
+aws logs tail /aws/lambda/test-interceptor-lambda --follow
+aws logs tail /aws/lambda/test-tool-lambda --follow
 ```
+
+CloudWatch Logs Insights query for user-attributed requests:
+```
+fields @timestamp, user_id, username, @message
+| filter user_id != "unknown"
+| sort @timestamp desc
+| limit 50
+```
+
+## Troubleshooting
+
+| Issue | Cause | Fix |
+|-------|-------|-----|
+| "Invalid authentication token" | Using ID token instead of access token, or token expired | Verify `token_use` claim is `access`; re-authenticate |
+| "No module named 'agent'" | Lambda code not uploaded | Run `python3 deploy_all.py` |
+| `AccessDeniedException` on ConverseStream | IAM policy ARN mismatch | Cross-region profiles route to multiple regions — ensure `bedrock:*::foundation-model/*` wildcard is in IAM policy |
+| Tool Lambda shows `user_id: unknown` | Interceptor not attached or failing | Check Interceptor CloudWatch logs |
+| Gateway not found | Stack not deployed or wrong GATEWAY_ID | Check `stack_outputs.json` |
+| Agent Lambda timeout | Gateway or Bedrock latency | Increase timeout in CloudFormation (currently 120s) |
 
 ## Current Status
 
@@ -272,5 +358,4 @@ Estimated ~$10-50/month for light testing. Delete the stack when not in use.
 
 ## Documentation
 
-- [Deployment Guide](infrastructure/DEPLOYMENT.md) — Deployment, validation, and troubleshooting
 - [Steering Guide](.kiro/steering/serverless-ai-agent-gateway.md) — Coding standards and patterns

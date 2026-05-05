@@ -20,13 +20,15 @@ The agent is model-driven: Claude decides which tool to call based on the user's
 - Python 3.12+ and `pip3`
 - Bedrock model access enabled in your account:
   - Open the [Bedrock console](https://console.aws.amazon.com/bedrock) → Model Access
-  - Enable **Claude Sonnet** (cross-region inference profile)
+  - Enable **Claude Sonnet 4.5** (cross-region inference profile)
 
 ## Deploy
 
 ```bash
 ./scripts/deploy.sh
 ```
+
+To use a different model, edit `BEDROCK_MODEL_ID` at the top of `scripts/deploy.sh` before running.
 
 This will:
 1. Validate the CloudFormation template
@@ -122,5 +124,6 @@ python3 -m pytest tests/unit/ tests/property/ -v
 ## Notes
 
 - Region: `us-east-1`
-- Model: Claude Sonnet (cross-region inference profile `us.anthropic.claude-sonnet-4-5-20250929-v1:0`)
+- Model: Claude Sonnet 4.5 (cross-region inference profile `us.anthropic.claude-sonnet-4-5-20250929-v1:0`)
+- To swap models without code changes, edit the `BEDROCK_MODEL_ID` variable near the top of `scripts/deploy.sh` and re-run `./scripts/deploy.sh`.
 - The MCP Gateway Target is created via boto3 in `deploy.sh` (not CloudFormation) because AgentCore probes `tools/list` during target creation — the placeholder Lambda code would fail that probe before the real code is deployed.

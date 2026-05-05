@@ -50,8 +50,8 @@ def main():
     print("=" * 60)
     print("\nAll Lambda functions deployed successfully!")
     print("\nNext steps:")
-    print("  1. Create a test user: python create_cognito_user.py")
-    print("  2. Run E2E test: python test_e2e_flow.py")
+    print("  1. Create a test user: python3 create_cognito_user.py")
+    print("  2. Run E2E test: python3 test_e2e_flow.py")
 
 
 if __name__ == "__main__":
