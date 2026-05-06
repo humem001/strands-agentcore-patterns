@@ -4,6 +4,9 @@ A serverless AI agent system that enables natural language AWS resource manageme
 
 ## Architecture
 
+![Architecture Diagram](architecture/lambda-target.png)
+
+
 ```
 User → Cognito (JWT) → Agent Lambda → AgentCore Gateway (MCP) → Interceptor Lambda → Tool Lambda → AWS Services
                           │                    │                        │                    │
