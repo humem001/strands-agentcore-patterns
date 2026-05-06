@@ -151,7 +151,7 @@ Ensure the following are in place before running any commands:
 ### Step 3: Clone the Repository
 
 ```bash
-git clone <repo-url>
+git clone https://github.com/aws-samples/serverless-patterns
 cd strands-agentcore-lambda
 ```
 
