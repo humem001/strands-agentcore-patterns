@@ -131,29 +131,31 @@ Without the Interceptor, Tool Lambda would have no knowledge of which user initi
 | CloudWatch Logs | Structured logging with 30-day retention |
 | CloudWatch Alarms | Error rate, duration, throttle monitoring |
 
-No API Gateway, no VPC, no S3 for deployment artifacts.
+
 
 ## Deployment
 
-### Prerequisites
+### Step 1: Open a Terminal
 
-Open a terminal on your machine and ensure the following are in place before running any commands:
+Open a terminal on your machine and navigate to where you want to clone the project.
+
+### Step 2: Prerequisites
+
+Ensure the following are in place before running any commands:
 
 - Python 3.12+ — verify with `python3 --version`
 - AWS CLI installed and configured with credentials — verify with `aws sts get-caller-identity`
 - AWS account with Bedrock model access enabled in `us-east-1`
 - `boto3` installed — `pip3 install boto3`
 
-Clone the repository and navigate into it:
+### Step 3: Clone the Repository
 
 ```bash
-git clone https://github.com/aws-samples/serverless-patterns
-
+git clone <repo-url>
 cd strands-agentcore-lambda
-
 ```
 
-### Step 1: Deploy CloudFormation Stack
+### Step 4: Deploy CloudFormation Stack
 
 ```bash
 python3 infrastructure/deploy_stack.py
@@ -179,13 +181,15 @@ Available options:
 
 The `--bedrock-model-id` and `--bedrock-base-model-id` parameters control the `BEDROCK_MODEL_ID` Lambda env var and the IAM resource ARNs granting Bedrock invoke permissions.
 
+> **Note:** Lambda function names are prefixed with the `--environment` value (default `test`). If you deploy with `--environment dev`, your functions will be named `dev-agent-lambda`, `dev-interceptor-lambda`, `dev-tool-lambda`.
+
 #### Validate Template First (Optional)
 
 ```bash
 python3 infrastructure/validate_template.py
 ```
 
-### Step 2: Package and Upload Lambda Code
+### Step 5: Package and Upload Lambda Code
 
 ```bash
 python3 deploy_all.py
@@ -203,7 +207,7 @@ Lambda packaging uses `pip install --platform manylinux2014_x86_64 --python-vers
 
 > **Note:** Do not remove `.dist-info` directories from `agent-lambda-deps/` — opentelemetry needs them for `importlib.metadata.entry_points()` discovery.
 
-### Step 3: Create Test User
+### Step 6: Create Test User
 
 ```bash
 python3 create_cognito_user.py
@@ -211,7 +215,7 @@ python3 create_cognito_user.py
 
 Creates a confirmed user in the Cognito User Pool.
 
-### Step 4: Run End-to-End Test
+### Step 7: Run End-to-End Test
 
 ```bash
 python3 test_e2e_flow.py
@@ -219,7 +223,7 @@ python3 test_e2e_flow.py
 
 Validates the complete flow: Cognito auth → Agent Lambda → Strands Agent → Gateway MCP → Interceptor → Tool Lambda → S3 → response with user context.
 
-### Step 5: Validate Deployment (Optional)
+### Step 8: Validate Deployment (Optional)
 
 ```bash
 python3 infrastructure/validate_deployment.py
@@ -310,7 +314,7 @@ jwt_token = auth['AuthenticationResult']['AccessToken']
 # Invoke Agent Lambda
 lambda_client = boto3.client('lambda', region_name='us-east-1')
 response = lambda_client.invoke(
-    FunctionName='test-agent-lambda',
+    FunctionName='test-agent-lambda',  # Replace 'test' with your --environment value
     Payload=json.dumps({
         'headers': {'Authorization': f'Bearer {jwt_token}'},
         'body': json.dumps({'prompt': 'List my S3 buckets'})
@@ -326,6 +330,8 @@ print(body['user_context'])
 ```
 
 ## Viewing Logs
+
+Replace `test` with your environment name if you deployed with a different `--environment` value:
 
 ```bash
 aws logs tail /aws/lambda/test-agent-lambda --follow
@@ -372,4 +378,6 @@ Estimated ~$10-50/month for light testing. Delete the stack when not in use.
 
 ## Documentation
 
-- [Steering Guide](.kiro/steering/serverless-ai-agent-gateway.md) — Coding standards and patterns
+- [Strands Agents SDK](https://github.com/strands-agents/sdk-python)
+- [AgentCore Gateway Guide](https://docs.aws.amazon.com/bedrock/latest/userguide/agentcore-gateway.html)
+- [Model Context Protocol](https://modelcontextprotocol.io/)
