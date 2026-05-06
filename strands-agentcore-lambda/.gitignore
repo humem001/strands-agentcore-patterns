@@ -64,5 +64,9 @@ samconfig.toml
 jwt_tokens.json
 test_credentials.json
 
+# Kiro IDE
+.kiro/
+
+
 # Generated outputs
 infrastructure/stack_outputs.json

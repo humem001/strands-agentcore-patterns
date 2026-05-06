@@ -137,10 +137,21 @@ No API Gateway, no VPC, no S3 for deployment artifacts.
 
 ### Prerequisites
 
-- Python 3.12+
-- AWS CLI configured with credentials
-- AWS account with Bedrock model access (us-east-1)
-- `boto3` installed (`pip install boto3`)
+Open a terminal on your machine and ensure the following are in place before running any commands:
+
+- Python 3.12+ — verify with `python3 --version`
+- AWS CLI installed and configured with credentials — verify with `aws sts get-caller-identity`
+- AWS account with Bedrock model access enabled in `us-east-1`
+- `boto3` installed — `pip3 install boto3`
+
+Clone the repository and navigate into it:
+
+```bash
+git clone https://github.com/aws-samples/serverless-patterns
+
+cd strands-agentcore-lambda
+
+```
 
 ### Step 1: Deploy CloudFormation Stack
 
