@@ -152,7 +152,7 @@ Ensure the following are in place before running any commands:
 
 ```bash
 git clone https://github.com/aws-samples/serverless-patterns
-cd strands-agentcore-lambda
+cd serverless-patterns/strands-agentcore-lambda
 ```
 
 ### Step 4: Deploy CloudFormation Stack
