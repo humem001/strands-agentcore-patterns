@@ -381,3 +381,9 @@ Estimated ~$10-50/month for light testing. Delete the stack when not in use.
 - [Strands Agents SDK](https://github.com/strands-agents/sdk-python)
 - [AgentCore Gateway Guide](https://docs.aws.amazon.com/bedrock/latest/userguide/agentcore-gateway.html)
 - [Model Context Protocol](https://modelcontextprotocol.io/)
+
+---
+
+Copyright 2026 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+
+SPDX-License-Identifier: MIT-0

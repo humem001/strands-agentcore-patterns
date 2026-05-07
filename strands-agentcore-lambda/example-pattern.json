@@ -35,6 +35,10 @@
         "link": "https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/gateway.html"
       },
       {
+        "text": "AgentCore Gateway Lambda Target",
+        "link": "https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/gateway-add-target-lambda.html"
+      },
+      {
         "text": "Model Context Protocol (MCP)",
         "link": "https://modelcontextprotocol.io/"
       },
