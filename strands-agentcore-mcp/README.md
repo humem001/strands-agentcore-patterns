@@ -4,15 +4,22 @@ A serverless AI agent that answers natural-language prompts about products by in
 
 ## Architecture
 
+![Architecture Diagram](architecture/mcp-target.png)
+
 ```
-User prompt
-  → Agent Lambda (Strands SDK + Claude Sonnet)
-    → AgentCore Gateway (Cognito JWT auth)
-      → MCP Target → API Gateway → MCP Server Lambda
-                                     → DynamoDB (Product_Table)
+User → Agent Lambda → AgentCore Gateway (MCP) → API Gateway → MCP Server Lambda → DynamoDB
+            │                   │                                      │
+       Strands Agent       CUSTOM_JWT Auth                       JSON-RPC 2.0
+       + BedrockModel      + MCP Routing                         Tool Execution
+       + MCPClient         + Tool Discovery                      (list/get/put)
+            │
+       Cognito JWT
+       Validated
 ```
 
 The agent is model-driven: Claude decides which tool to call based on the user's prompt and the tool schemas discovered at runtime via `tools/list`.
+
+> **Why API Gateway?** AgentCore Gateway's MCP target type requires an HTTPS endpoint to forward MCP requests to. Lambda functions don't have a public HTTPS URL on their own, so API Gateway sits in front of the MCP Server Lambda to provide one. This is different from Smithy or OpenAPI targets where the Gateway handles protocol translation — with an MCP target, the Lambda itself speaks MCP (JSON-RPC 2.0 over HTTP) directly.
 
 ## Prerequisites
 
@@ -23,6 +30,19 @@ The agent is model-driven: Claude decides which tool to call based on the user's
   - Enable **Claude Sonnet 4.5** (cross-region inference profile)
 
 ## Deploy
+
+### Step 1: Open a Terminal
+
+Open a terminal on your machine and navigate to where you want to clone the project.
+
+### Step 2: Clone the Repository
+
+```bash
+git clone https://github.com/aws-samples/serverless-patterns
+cd serverless-patterns/strands-agentcore-mcp
+```
+
+### Step 3: Deploy
 
 ```bash
 ./scripts/deploy.sh
@@ -127,3 +147,8 @@ python3 -m pytest tests/unit/ tests/property/ -v
 - Model: Claude Sonnet 4.5 (cross-region inference profile `us.anthropic.claude-sonnet-4-5-20250929-v1:0`)
 - To swap models without code changes, edit the `BEDROCK_MODEL_ID` variable near the top of `scripts/deploy.sh` and re-run `./scripts/deploy.sh`.
 - The MCP Gateway Target is created via boto3 in `deploy.sh` (not CloudFormation) because AgentCore probes `tools/list` during target creation — the placeholder Lambda code would fail that probe before the real code is deployed.
+
+---
+
+Copyright 2026 Amazon.com, Inc. or its affiliates. All Rights Reserved.  
+SPDX-License-Identifier: MIT-0
