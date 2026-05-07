@@ -35,6 +35,10 @@
         "text": "Amazon Bedrock AgentCore Gateway",
         "link": "https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/gateway.html"
       },
+       {
+        "text": "Amazon Bedrock AgentCore Gateway",
+        "link": "https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/gateway.html"
+      },
       {
         "text": "AgentCore Gateway API Gateway Target",
         "link": "https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/gateway-target-api-gateway.html"
