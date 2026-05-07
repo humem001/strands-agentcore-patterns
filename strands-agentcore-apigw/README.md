@@ -221,3 +221,9 @@ python -m pytest tests/unit/test_properties.py -v
 - **Credential provider**: Not a CloudFormation resource — managed via CLI. The deploy script auto-detects CLI support and creates/updates it, with fallback to manual instructions
 - **Region**: Must be `us-east-1` (AgentCore availability)
 - **Bedrock model ID — inference profile required**: Claude Sonnet 4.6 does not support direct on-demand invocation on Bedrock. You must use a cross-region inference profile ID. The default is `us.anthropic.claude-sonnet-4-6` (US profile). Using the bare `anthropic.claude-sonnet-4-6` ID will result in a `ValidationException`. If you need global routing, use `global.anthropic.claude-sonnet-4-6` instead.
+
+---
+
+Copyright 2026 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+
+SPDX-License-Identifier: MIT-0
