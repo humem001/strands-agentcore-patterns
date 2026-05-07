@@ -1,6 +1,6 @@
 {
   "title": "Serverless AI Weather Agent with AgentCore Gateway and API Gateway Target",
-  "description": "Serverless AI weather agent using Strands SDK and AgentCore Gateway with an API Gateway target type. AgentCore auto-discovers tools from the API Gateway OpenAPI export via GetExportAPI, and uses an API key credential provider for outbound authentication to WeatherAPI.com.",
+  "description": "Serverless AI weather agent using Strands SDK and AgentCore Gateway with an API Gateway target. Uses MCP, Cognito JWT auth, and WeatherAPI.com.",
   "language": "Python",
   "level": "300",
   "framework": "CloudFormation",
@@ -37,7 +37,7 @@
       },
       {
         "text": "AgentCore Gateway API Gateway Target",
-        "link": "https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/gateway-api-gateway-target.html"
+        "link": "https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/gateway-target-api-gateway.html"
       },
       {
         "text": "Model Context Protocol (MCP)",
