@@ -30,7 +30,18 @@ The LLM decides which tool to call. AgentCore auto-discovers available tools fro
 
 ## Quick Start
 
-### 1. Deploy
+### Step 1: Open a Terminal
+
+Open a terminal on your machine and navigate to where you want to clone the project.
+
+### Step 2: Clone the Repository
+
+```bash
+git clone https://github.com/aws-samples/serverless-patterns
+cd serverless-patterns/strands-agentcore-apigw
+```
+
+### Step 3: Deploy
 
 ```bash
 ./scripts/deploy.sh \

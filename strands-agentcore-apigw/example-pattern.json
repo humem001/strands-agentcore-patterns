@@ -1,26 +1,27 @@
 {
-  "title": "Serverless AI Agent Gateway with Strands SDK and AgentCore",
-  "description": "Serverless AI agent using Strands SDK and AgentCore Gateway MCP with Bedrock, featuring Cognito JWT auth and end-to-end user context propagation.",
+  "title": "Serverless AI Weather Agent with AgentCore Gateway and API Gateway Target",
+  "description": "Serverless AI weather agent using Strands SDK and AgentCore Gateway with an API Gateway target type. AgentCore auto-discovers tools from the API Gateway OpenAPI export via GetExportAPI, and uses an API key credential provider for outbound authentication to WeatherAPI.com.",
   "language": "Python",
   "level": "300",
   "framework": "CloudFormation",
   "introBox": {
     "headline": "How it works",
     "text": [
-      "The user authenticates with Amazon Cognito and receives a JWT access token.",
-      "The JWT is passed to an Agent Lambda which uses the Strands Agents SDK to create an AI agent backed by Amazon Bedrock (us.anthropic.claude-sonnet-4-6).",
-      "The Strands Agent connects to an AgentCore Gateway MCP endpoint, dynamically discovering available tools via the MCP tools/list protocol.",
-      "The AgentCore Gateway validates the JWT token using a CUSTOM_JWT authorizer backed by Cognito.",
-      "A Request Interceptor Lambda extracts JWT claims (user_id, username, client_id) and injects them as user_context into the MCP tool arguments.",
-      "The Tool Lambda executes AWS operations (e.g. S3 ListBuckets) with full user attribution, ensuring every action is traceable to the originating user.",
+      "The user authenticates with Amazon Cognito and receives a JWT ID token.",
+      "The JWT is passed to an Agent Lambda which uses the Strands Agents SDK to create an AI agent backed by Amazon Bedrock (us.anthropic.claude-sonnet-4-6 cross-region inference profile).",
+      "The Strands Agent connects to an AgentCore Gateway MCP endpoint, dynamically discovering available weather tools via the MCP tools/list protocol.",
+      "AgentCore Gateway auto-discovers operations from the API Gateway REST API via GetExportAPI and presents them as MCP tools to the agent.",
+      "The AgentCore Gateway validates the incoming JWT token using a CUSTOM_JWT authorizer backed by Cognito.",
+      "When the agent selects a tool, AgentCore routes the request to the API Gateway REST API, authenticating with an API key managed by a credential provider backed by Secrets Manager.",
+      "The API Gateway proxies the request to WeatherAPI.com, injecting the WeatherAPI key from a Secrets Manager-backed stage variable.",
       "The Strands SDK handles the full agentic loop: tool discovery, Claude tool selection, MCP tool execution, and response formatting — all in a single agent() call."
     ]
   },
   "gitHub": {
     "template": {
-      "repoURL": "https://github.com/aws-samples/serverless-patterns/tree/main/strands-agentcore-lambda",
-      "templateURL": "serverless-patterns/strands-agentcore-lambda",
-      "projectFolder": "strands-agentcore-lambda",
+      "repoURL": "https://github.com/aws-samples/serverless-patterns/tree/main/strands-agentcore-apigw",
+      "templateURL": "serverless-patterns/strands-agentcore-apigw",
+      "projectFolder": "strands-agentcore-apigw",
       "templateFile": "infrastructure/cloudformation-template.yaml"
     }
   },
@@ -35,6 +36,10 @@
         "link": "https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/gateway.html"
       },
       {
+        "text": "AgentCore Gateway API Gateway Target",
+        "link": "https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/gateway-api-gateway-target.html"
+      },
+      {
         "text": "Model Context Protocol (MCP)",
         "link": "https://modelcontextprotocol.io/"
       },
@@ -43,27 +48,34 @@
         "link": "https://docs.aws.amazon.com/cognito/latest/developerguide/amazon-cognito-user-pools-using-tokens-verifying-a-jwt.html"
       },
       {
-        "text": "Amazon Bedrock Cross-Region Inference",
+        "text": "Amazon Bedrock Cross-Region Inference Profiles",
         "link": "https://docs.aws.amazon.com/bedrock/latest/userguide/inference-profiles-support.html"
+      },
+      {
+        "text": "WeatherAPI.com",
+        "link": "https://www.weatherapi.com/"
       }
     ]
   },
   "deploy": {
     "text": [
-      "python3 infrastructure/deploy_stack.py",
-      "python3 deploy_all.py",
-      "python3 create_cognito_user.py",
-      "python3 test_e2e_flow.py"
+      "./scripts/deploy.sh --environment-name dev --weather-api-key YOUR_WEATHERAPI_KEY --region us-east-1"
     ]
   },
   "testing": {
     "text": [
-      "See the README for detailed testing and end-to-end validation instructions."
+      "See the README for detailed testing and end-to-end validation instructions.",
+      "./scripts/test.sh",
+      "./scripts/test.sh 'What is the weather in London, UK?'"
     ]
   },
   "cleanup": {
     "text": [
-      "aws cloudformation delete-stack --stack-name serverless-ai-agent-gateway-test --region us-east-1"
+      "aws bedrock-agentcore-control delete-api-key-credential-provider --name dev-weather-apigw-key --region us-east-1",
+      "aws cloudformation delete-stack --stack-name dev-weather-agent --region us-east-1",
+      "aws cloudformation wait stack-delete-complete --stack-name dev-weather-agent --region us-east-1",
+      "aws secretsmanager delete-secret --secret-id dev/weather-api-key --force-delete-without-recovery --region us-east-1",
+      "aws secretsmanager delete-secret --secret-id dev/apigw-api-key --force-delete-without-recovery --region us-east-1"
     ]
   },
   "authors": [
