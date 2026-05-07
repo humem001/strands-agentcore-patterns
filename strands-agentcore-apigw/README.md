@@ -4,12 +4,17 @@ A serverless AI weather agent built on AWS Bedrock AgentCore. Uses the Strands S
 
 ## Architecture
 
+![Architecture Diagram](architecture/apigateway-target.png)
+
 ```
-User → Lambda (Strands SDK + Claude Sonnet 4.6)
-     → Cognito JWT authentication
-     → AgentCore Gateway (MCP protocol, CUSTOM_JWT auth)
-     → API Gateway REST API (API key auth via usage plan)
-     → WeatherAPI.com
+User → Agent Lambda → AgentCore Gateway (MCP) → API Gateway → WeatherAPI.com
+         │                    │                      │
+    Strands Agent        CUSTOM_JWT Auth         API Key Auth
+    + BedrockModel       + MCP Routing           (credential
+    + MCPClient          + Tool Discovery         provider)
+         │
+    Cognito JWT
+    Validated
 ```
 
 The LLM decides which tool to call. AgentCore auto-discovers available tools from the API Gateway's OpenAPI export and presents them to the agent via MCP `tools/list`. When the agent calls a tool, AgentCore routes the request to API Gateway, authenticating with an API key managed by a credential provider.
