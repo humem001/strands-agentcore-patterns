@@ -4,12 +4,18 @@ A serverless AI agent that uses AWS Bedrock AgentCore Gateway with a Smithy mode
 
 ## Architecture
 
+![Architecture Diagram](architecture/target-smithy.png)
+
 ```
-User → test.sh (Cognito auth + Lambda invoke)
-     → Agent Lambda (Strands SDK + Claude Sonnet 4.6)
-     → AgentCore Gateway (MCP protocol, CUSTOM_JWT authorizer)
-     → Smithy Model Target (official Bedrock Runtime model from S3)
-     → Bedrock Runtime Converse API → Claude Haiku 4.5
+User → test.sh → Agent Lambda ──────────────→ AgentCore Gateway (MCP) ──────────→ Bedrock Runtime
+                      │                               │                                   │
+               Strands Agent                  CUSTOM_JWT Auth                    GATEWAY_IAM_ROLE
+               + BedrockModel                 (Cognito JWKS)                     (IAM role signs
+               (Sonnet 4.6)                   + MCP Protocol                     requests — no
+               + MCPClient                    + Tool Discovery                    API key needed)
+                      │                       + SmithyModel target                      │
+               Cognito JWT                      (loaded from S3)               Converse API call
+               validated                                                        → Claude Haiku 4.5
 ```
 
 ## How It Works
@@ -31,6 +37,27 @@ User → test.sh (Cognito auth + Lambda invoke)
 - Bedrock model access enabled for Claude Sonnet 4.6 and Claude Haiku 4.5
 
 ## Deploy
+
+### Step 1: Prerequisites
+
+- AWS CLI v2
+- Python 3.12+
+- pip3
+- AWS account with Bedrock and AgentCore enabled in `us-east-1`
+- Bedrock model access enabled for Claude Sonnet 4.6 and Claude Haiku 4.5
+
+### Step 2: Open a Terminal
+
+Open a terminal on your machine and navigate to where you want to clone the project.
+
+### Step 3: Clone the Repository
+
+```bash
+git clone https://github.com/aws-samples/serverless-patterns
+cd serverless-patterns/strands-agentcore-smithy
+```
+
+### Step 4: Deploy
 
 One command deploys everything:
 
@@ -155,3 +182,8 @@ aws s3 rb s3://agentcore-smithy-bedrock-smithy-models --force --region us-east-1
 ```bash
 python -m pytest tests/ -v
 ```
+
+---
+
+Copyright 2026 Amazon.com, Inc. or its affiliates. All Rights Reserved.  
+SPDX-License-Identifier: MIT-0
