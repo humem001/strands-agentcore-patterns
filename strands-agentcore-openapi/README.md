@@ -6,17 +6,24 @@ A serverless AI agent system that enables natural language interaction with Open
 
 The OpenAPI Agent Gateway dynamically discovers and invokes REST API operations from OpenAPI 3.x specifications. Users authenticate via Cognito JWT, submit natural language prompts to an Agent Lambda powered by Claude/Bedrock, which discovers and invokes tools dynamically generated from OpenAPI specifications through the AgentCore Gateway.
 
-```
-User → Agent Lambda → Cognito JWT validation → AgentCore Gateway (MCP) → WeatherAPI.com (OpenAPI Target)
-                          ↕                         ↕
-                    Strands Agents SDK         API Key Credential Provider
-                    (Bedrock Claude)           (Token Vault → Secrets Manager)
-```
-
 ## Architecture
 
-- **Agent Lambda** (512MB, 30s timeout): Processes natural language prompts using Claude Sonnet 4.5, discovers tools from OpenAPI specifications via the Gateway, and orchestrates tool execution
-- **Weather API Lambda** (256MB, 10s timeout): Mock Weather API demonstrating the OpenAPI integration pattern with getCurrentWeather and getForecast operations
+![Architecture Diagram](architecture/target-openapi.png)
+
+```
+User → Agent Lambda → AgentCore Gateway (MCP) → WeatherAPI.com
+            │                   │                       │
+     ───────────────    ─────────────────────    ─────────────────────
+     Strands Agent       CUSTOM_JWT Auth           API Key Auth
+     + BedrockModel      + MCP Tool Routing        (Credential Provider
+     + MCPClient         + Tool Discovery           → Secrets Manager)
+            │                   │
+     Cognito JWT          OpenAPI Target
+     Validated            (auto-discovered)
+```
+
+- **Agent Lambda** (512MB, 120s timeout): Processes natural language prompts using Claude Sonnet 4.5, discovers tools from OpenAPI specifications via the Gateway, and orchestrates tool execution
+- **AgentCore Gateway**: Handles CUSTOM_JWT auth via Cognito, exposes tools via MCP, and calls WeatherAPI.com directly using API key credential injection
 
 ## Project Structure
 
@@ -38,29 +45,53 @@ User → Agent Lambda → Cognito JWT validation → AgentCore Gateway (MCP) →
 - Python 3.12+ — [python.org/downloads](https://www.python.org/downloads/)
 - AWS CLI v2 (2.28+ recommended) — [docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html)
 - AWS account with access to: Bedrock, Lambda, AgentCore Gateway, Cognito, Secrets Manager, S3, CloudWatch
-- Bedrock model access enabled for Claude 3 Sonnet (or your chosen model) in `us-east-1`
+- Bedrock model access enabled for Claude Sonnet 4.5 (or your chosen model) in `us-east-1`
 - A free WeatherAPI.com API key — [weatherapi.com/signup.aspx](https://www.weatherapi.com/signup.aspx)
 
 ## Deployment
 
-### 1. Set up the project
+### Step 1: Clone the repository
+
+Open a terminal and run:
 
 ```bash
-git clone <repository-url>
-cd openapi-agent-gateway
+git clone https://github.com/aws-samples/serverless-patterns
+cd serverless-patterns/strands-agentcore-openapi
+```
 
+### Step 2: Set up your Python environment
+
+```bash
 python3 -m venv venv
 source venv/bin/activate    # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-Configure AWS credentials if you haven't already:
+### Step 3: Configure AWS credentials
+
+If you haven't already configured the AWS CLI:
 
 ```bash
 aws configure
+# AWS Access Key ID: <your-access-key>
+# AWS Secret Access Key: <your-secret-key>
+# Default region name: us-east-1
+# Default output format: json
 ```
 
-### 2. Deploy
+Verify it's working:
+
+```bash
+aws sts get-caller-identity
+```
+
+### Step 4: Get a WeatherAPI.com API key
+
+1. Sign up at [weatherapi.com/signup.aspx](https://www.weatherapi.com/signup.aspx) (free, no credit card)
+2. Verify your email and log in to [weatherapi.com/my](https://www.weatherapi.com/my/)
+3. Copy your API key from the dashboard
+
+### Step 5: Deploy
 
 ```bash
 ./scripts/deploy.sh \
@@ -84,9 +115,9 @@ The script handles everything: Secrets Manager, CloudFormation stack, credential
 | `--region` | `us-east-1` | AWS region |
 | `--s3-bucket` | auto-created | S3 bucket for Lambda packages |
 
-### 3. Changing the model (optional)
+### Step 6: Changing the model (optional)
 
-The agent defaults to Claude 3 Sonnet. Pass `--model-id` to the deploy script to use a different Bedrock model:
+The agent defaults to Claude Sonnet 4.5. Pass `--model-id` to use a different Bedrock model:
 
 ```bash
 ./scripts/deploy.sh \
@@ -147,4 +178,6 @@ To fully clean up all resources including the credential provider, secret, and S
 
 ## License
 
-Copyright (c) 2024. All rights reserved.
+Copyright 2026 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+
+SPDX-License-Identifier: MIT-0
