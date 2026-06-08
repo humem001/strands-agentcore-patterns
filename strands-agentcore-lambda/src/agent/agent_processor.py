@@ -11,6 +11,10 @@ from shared.logging_utils import StructuredLogger
 from .strands_client import create_mcp_client, create_agent
 
 
+# Module-level cache — persists across Lambda invocations within the same container
+_gateway_url_cache: Optional[str] = None
+
+
 class AgentProcessor:
     """Orchestrates Strands Agent processing for each Lambda invocation."""
 
@@ -35,7 +39,6 @@ class AgentProcessor:
         self.model_id = model_id
         self.region = region
         self.logger = logger
-        self._gateway_url: Optional[str] = None
 
         logger.info("Agent processor initialized")
 
@@ -93,15 +96,19 @@ class AgentProcessor:
     def _get_gateway_url(self) -> str:
         """Retrieve and cache Gateway MCP endpoint URL via get_gateway API.
 
+        Uses module-level cache so the URL persists across Lambda invocations
+        within the same container, not just within a single invocation.
+
         Returns:
             Gateway MCP endpoint URL
         """
-        if self._gateway_url is not None:
-            return self._gateway_url
+        global _gateway_url_cache
+        if _gateway_url_cache is not None:
+            return _gateway_url_cache
 
         self.logger.info("Retrieving gateway URL", gateway_id=self.gateway_id)
         client = boto3.client("bedrock-agentcore-control", region_name=self.region)
         response = client.get_gateway(gatewayIdentifier=self.gateway_id)
-        self._gateway_url = response["gatewayUrl"]
-        self.logger.info("Gateway URL cached", gateway_url=self._gateway_url)
-        return self._gateway_url
+        _gateway_url_cache = response["gatewayUrl"]
+        self.logger.info("Gateway URL cached", gateway_url=_gateway_url_cache)
+        return _gateway_url_cache

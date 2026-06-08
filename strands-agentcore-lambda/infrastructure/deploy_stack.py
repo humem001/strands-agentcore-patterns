@@ -302,9 +302,9 @@ def main():
         print("\n✓ Deployment completed successfully!")
         print(f"\nNext steps:")
         print(f"  1. Review outputs in: {args.output_file}")
-        print(f"  2. Package and upload Lambda code: python3 deploy_all.py")
-        print(f"  3. Create test user: python3 create_cognito_user.py")
-        print(f"  4. Run end-to-end test: python3 test_e2e_flow.py")
+        print(f"  2. Package and upload Lambda code: python3 scripts/deploy_all.py")
+        print(f"  3. Create test user: python3 scripts/create_cognito_user.py")
+        print(f"  4. Run end-to-end test: python3 scripts/test_e2e_flow.py")
         print(f"  5. (Optional) Validate deployment: python3 infrastructure/validate_deployment.py")
     else:
         print("\n✗ Failed to retrieve stack outputs")

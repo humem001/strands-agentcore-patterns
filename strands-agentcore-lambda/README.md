@@ -1,6 +1,6 @@
 # Serverless AI Agent Gateway
 
-A serverless AI agent system that enables natural language AWS resource management using the Strands Agents SDK, AWS Bedrock, and AgentCore Gateway with MCP protocol. Features JWT-based authentication via Cognito and end-to-end user context propagation.
+A serverless AI agent system that enables natural language AWS resource management using the Strands Agents SDK, Amazon Bedrock, and AgentCore Gateway with MCP protocol. Features JWT-based authentication via Amazon Cognito and end-to-end user context propagation.
 
 ## Architecture
 
@@ -105,15 +105,16 @@ Without the Interceptor, Tool Lambda would have no knowledge of which user initi
 ├── agent-lambda-deps/            # Pre-built Linux wheels for Agent Lambda
 ├── agent-requirements.txt        # Agent Lambda pip dependencies
 ├── requirements.txt              # Dev/test dependencies
-├── deploy_all.py                 # Package + upload all 3 Lambdas
-├── package_agent_lambda.py       # Package Agent Lambda zip
-├── package_interceptor_lambda.py # Package Interceptor Lambda zip
-├── package_tool_lambda.py        # Package Tool Lambda zip
-├── upload_agent_lambda.py        # Upload Agent Lambda to AWS
-├── upload_interceptor_lambda.py  # Upload Interceptor Lambda to AWS
-├── upload_tool_lambda.py         # Upload Tool Lambda to AWS
-├── create_cognito_user.py        # Create test user in Cognito
-├── test_e2e_flow.py              # End-to-end validation script
+├── scripts/
+│   ├── deploy_all.py                 # Package + upload all 3 Lambdas
+│   ├── package_agent_lambda.py       # Package Agent Lambda zip
+│   ├── package_interceptor_lambda.py # Package Interceptor Lambda zip
+│   ├── package_tool_lambda.py        # Package Tool Lambda zip
+│   ├── upload_agent_lambda.py        # Upload Agent Lambda to AWS
+│   ├── upload_interceptor_lambda.py  # Upload Interceptor Lambda to AWS
+│   ├── upload_tool_lambda.py         # Upload Tool Lambda to AWS
+│   ├── create_cognito_user.py        # Create test user in Cognito
+│   └── test_e2e_flow.py              # End-to-end validation script
 ├── setup.py                      # Package setup (editable install)
 └── setup.sh                      # Dev environment setup
 ```
@@ -134,6 +135,8 @@ Without the Interceptor, Tool Lambda would have no knowledge of which user initi
 
 
 ## Deployment
+
+> **Why raw CloudFormation instead of SAM?** AWS SAM does not currently support AgentCore Gateway and GatewayTarget resource types. CloudFormation is used directly with a thin Python wrapper (`infrastructure/deploy_stack.py`) for stack management, and separate packaging scripts for Lambda code deployment.
 
 ### Step 1: Open a Terminal
 
@@ -161,7 +164,7 @@ cd serverless-patterns/strands-agentcore-lambda
 python3 infrastructure/deploy_stack.py
 ```
 
-Creates all AWS resources (Cognito, Gateway, 3 Lambdas, IAM roles, CloudWatch). Takes ~5-10 minutes. Stack outputs saved to `infrastructure/stack_outputs.json`.
+Creates all AWS resources (Amazon Cognito, Gateway, 3 Lambdas, IAM roles, CloudWatch). Takes ~5-10 minutes. Stack outputs saved to `infrastructure/stack_outputs.json`.
 
 To deploy with a different Bedrock model:
 
@@ -192,7 +195,7 @@ python3 infrastructure/validate_template.py
 ### Step 5: Package and Upload Lambda Code
 
 ```bash
-python3 deploy_all.py
+python3 scripts/deploy_all.py
 ```
 
 This runs 6 scripts in sequence:
@@ -210,18 +213,18 @@ Lambda packaging uses `pip install --platform manylinux2014_x86_64 --python-vers
 ### Step 6: Create Test User
 
 ```bash
-python3 create_cognito_user.py
+python3 scripts/create_cognito_user.py
 ```
 
-Creates a confirmed user in the Cognito User Pool.
+Creates a confirmed user in the Amazon Cognito User Pool.
 
 ### Step 7: Run End-to-End Test
 
 ```bash
-python3 test_e2e_flow.py
+python3 scripts/test_e2e_flow.py
 ```
 
-Validates the complete flow: Cognito auth → Agent Lambda → Strands Agent → Gateway MCP → Interceptor → Tool Lambda → S3 → response with user context.
+Validates the complete flow: Amazon Cognito auth → Agent Lambda → Strands Agent → Gateway MCP → Interceptor → Tool Lambda → S3 → response with user context.
 
 ### Step 8: Validate Deployment (Optional)
 
@@ -252,13 +255,13 @@ Key outputs: `GatewayId`, `CognitoUserPoolId`, `AgentLambdaArn`, `InterceptorLam
 
 After modifying source code only:
 ```bash
-python3 deploy_all.py
+python3 scripts/deploy_all.py
 ```
 
 After modifying `cloudformation-template.yaml`:
 ```bash
 python3 infrastructure/deploy_stack.py
-python3 deploy_all.py
+python3 scripts/deploy_all.py
 ```
 
 ## Required AWS Permissions
@@ -302,7 +305,7 @@ pytest tests/ --cov=src --cov-report=html
 ```python
 import boto3, json
 
-# Authenticate with Cognito to get access token
+# Authenticate with Amazon Cognito to get access token
 cognito = boto3.client('cognito-idp', region_name='us-east-1')
 auth = cognito.initiate_auth(
     ClientId='<your-client-id>',
@@ -352,7 +355,7 @@ fields @timestamp, user_id, username, @message
 | Issue | Cause | Fix |
 |-------|-------|-----|
 | "Invalid authentication token" | Using ID token instead of access token, or token expired | Verify `token_use` claim is `access`; re-authenticate |
-| "No module named 'agent'" | Lambda code not uploaded | Run `python3 deploy_all.py` |
+| "No module named 'agent'" | Lambda code not uploaded | Run `python3 scripts/deploy_all.py` |
 | `AccessDeniedException` on ConverseStream | IAM policy ARN mismatch | Cross-region profiles route to multiple regions — ensure `bedrock:*::foundation-model/*` wildcard is in IAM policy |
 | Tool Lambda shows `user_id: unknown` | Interceptor not attached or failing | Check Interceptor CloudWatch logs |
 | Gateway not found | Stack not deployed or wrong GATEWAY_ID | Check `stack_outputs.json` |

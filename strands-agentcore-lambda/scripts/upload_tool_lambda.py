@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Upload Agent Lambda deployment package to AWS.
+Upload Tool Lambda deployment package to AWS.
 """
 
 import boto3
@@ -10,14 +10,14 @@ from pathlib import Path
 from botocore.exceptions import ClientError
 
 
-def upload_agent_lambda():
-    """Upload Agent Lambda deployment package."""
+def upload_tool_lambda():
+    """Upload Tool Lambda deployment package."""
     print("=" * 60)
-    print("UPLOADING AGENT LAMBDA")
+    print("UPLOADING TOOL LAMBDA")
     print("=" * 60)
     
     # Load stack outputs
-    outputs_file = Path("infrastructure/stack_outputs.json")
+    outputs_file = Path(__file__).parent.parent / "infrastructure" / "stack_outputs.json"
     if not outputs_file.exists():
         print(f"✗ Stack outputs not found: {outputs_file}")
         print("  Run: python3 infrastructure/deploy_stack.py")
@@ -26,9 +26,9 @@ def upload_agent_lambda():
     with open(outputs_file) as f:
         outputs = json.load(f)
     
-    function_arn = outputs.get("AgentLambdaArn")
+    function_arn = outputs.get("ToolLambdaArn")
     if not function_arn:
-        print("✗ AgentLambdaArn not found in stack outputs")
+        print("✗ ToolLambdaArn not found in stack outputs")
         return False
     
     function_name = function_arn.split(":")[-1]
@@ -36,10 +36,10 @@ def upload_agent_lambda():
     print(f"ARN: {function_arn}")
     
     # Check deployment package exists
-    zip_file = Path("agent-lambda-deployment.zip")
+    zip_file = Path("tool-lambda-deployment.zip")
     if not zip_file.exists():
         print(f"\n✗ Deployment package not found: {zip_file}")
-        print("  Run: python3 package_agent_lambda.py")
+        print("  Run: python3 scripts/package_tool_lambda.py")
         return False
     
     zip_size = zip_file.stat().st_size / (1024 * 1024)
@@ -82,12 +82,12 @@ def upload_agent_lambda():
         return False
     
     print("\n" + "=" * 60)
-    print("✓ AGENT LAMBDA DEPLOYED")
+    print("✓ TOOL LAMBDA DEPLOYED")
     print("=" * 60)
     
     return True
 
 
 if __name__ == "__main__":
-    success = upload_agent_lambda()
+    success = upload_tool_lambda()
     sys.exit(0 if success else 1)

@@ -109,9 +109,17 @@ Resources:
             Principal:
               Service: bedrock-agentcore.amazonaws.com
             Action: sts:AssumeRole
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/CloudWatchLogsFullAccess
       Policies:
+        - PolicyName: CloudWatchLogsPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/bedrock-agentcore/*'
         - PolicyName: InvokeLambdaPolicy
           PolicyDocument:
             Version: '2012-10-17'

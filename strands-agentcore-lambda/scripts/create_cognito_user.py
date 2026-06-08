@@ -5,6 +5,7 @@ Create a test user in Cognito User Pool.
 
 import boto3
 import json
+import os
 import sys
 from pathlib import Path
 from botocore.exceptions import ClientError
@@ -17,7 +18,7 @@ def create_test_user():
     print("=" * 60)
     
     # Load stack outputs
-    outputs_file = Path("infrastructure/stack_outputs.json")
+    outputs_file = Path(__file__).parent.parent / "infrastructure" / "stack_outputs.json"
     if not outputs_file.exists():
         print(f"✗ Stack outputs not found: {outputs_file}")
         return False
@@ -29,8 +30,10 @@ def create_test_user():
     if not user_pool_id:
         print("✗ CognitoUserPoolId not found in stack outputs")
         return False
-    
+
+    region = os.environ.get("AWS_DEFAULT_REGION") or os.environ.get("AWS_REGION") or "us-east-1"
     print(f"User Pool ID: {user_pool_id}")
+    print(f"Region: {region}")
     
     # User details (username must be email for this user pool)
     email = "testuser@example.com"
@@ -42,7 +45,7 @@ def create_test_user():
     print(f"  Password: {password}")
     
     try:
-        cognito_client = boto3.client('cognito-idp', region_name='us-east-1')
+        cognito_client = boto3.client('cognito-idp', region_name=region)
         
         # Create user
         print("\nCreating user in Cognito...")
@@ -154,7 +157,7 @@ def create_test_user():
     print(f"Password: {password}")
     print(f"Email: {email}")
     print(f"\nCredentials saved to: test_credentials.json")
-    print("\nNext step: python3 test_e2e_flow.py")
+    print("\nNext step: python3 scripts/test_e2e_flow.py")
     
     return True
 

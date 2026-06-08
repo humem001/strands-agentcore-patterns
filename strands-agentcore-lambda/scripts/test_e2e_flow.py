@@ -11,7 +11,9 @@ This script tests the complete flow:
 
 import boto3
 import json
+import os
 import sys
+from pathlib import Path
 
 def load_jwt_token():
     """Load JWT access token from file."""
@@ -28,13 +30,14 @@ def load_jwt_token():
             return tokens['access_token']
     except Exception as e:
         print(f"✗ Failed to load JWT token: {e}")
-        print("  Run: python3 create_cognito_user.py")
+        print("  Run: python3 scripts/create_cognito_user.py")
         sys.exit(1)
 
 def load_stack_outputs():
     """Load CloudFormation stack outputs."""
     try:
-        with open('infrastructure/stack_outputs.json', 'r') as f:
+        outputs_path = Path(__file__).parent.parent / 'infrastructure' / 'stack_outputs.json'
+        with open(outputs_path, 'r') as f:
             return json.load(f)
     except Exception as e:
         print(f"✗ Failed to load stack outputs: {e}")
@@ -81,8 +84,9 @@ def main():
     print(f"   Agent Lambda: {agent_lambda_arn}")
     print(f"   JWT Token: {jwt_token[:50]}...")
     
-    # Initialize Lambda client
-    lambda_client = boto3.client('lambda', region_name='us-east-1')
+    # Initialize Lambda client using region from env or stack outputs
+    region = os.environ.get("AWS_DEFAULT_REGION") or os.environ.get("AWS_REGION") or "us-east-1"
+    lambda_client = boto3.client('lambda', region_name=region)
     
     # Test 1: Simple prompt
     print("\n2. Testing Agent with prompt: 'List my S3 buckets'")

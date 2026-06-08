@@ -14,7 +14,7 @@ def upload_interceptor_lambda():
     print("="*60)
     
     # Load stack outputs
-    outputs_file = Path("infrastructure/stack_outputs.json")
+    outputs_file = Path(__file__).parent.parent / "infrastructure" / "stack_outputs.json"
     if not outputs_file.exists():
         print(f"✗ Stack outputs not found: {outputs_file}")
         print("  Run: python3 infrastructure/deploy_stack.py")
@@ -36,7 +36,7 @@ def upload_interceptor_lambda():
     zip_path = Path("interceptor-lambda-deployment.zip")
     if not zip_path.exists():
         print(f"✗ Deployment package not found: {zip_path}")
-        print("  Run: python3 package_interceptor_lambda.py")
+        print("  Run: python3 scripts/package_interceptor_lambda.py")
         return False
     
     # Get package size
