@@ -6,7 +6,7 @@ import yaml
 
 
 TEMPLATE_PATH = os.path.join(
-    os.path.dirname(__file__), "..", "..", "infrastructure", "cloudformation-template.yaml"
+    os.path.dirname(__file__), "..", "..", "infrastructure", "template.yaml"
 )
 
 

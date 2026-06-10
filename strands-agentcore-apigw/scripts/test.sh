@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -e
-CLIENT_ID="1gn8a7iov3drgr06fdi5eqfkdn"
+CLIENT_ID="4u8ka9e7dbmekuunrr9ikjna2c"
 FUNCTION_NAME="dev-weather-agent"
 REGION="us-east-1"
 USERNAME="testuser"

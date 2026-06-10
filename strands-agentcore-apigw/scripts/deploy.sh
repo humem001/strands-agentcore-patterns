@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
 # =============================================================================
-# AgentCore API Gateway Weather Agent — Deployment Script
+# AgentCore API Gateway Weather Agent — Deployment Script (AWS SAM)
 #
 # Deploys the full stack in the correct order, handling resources that cannot
-# be created via CloudFormation (credential provider).
+# be created via CloudFormation (the AgentCore credential provider).
+#
+# Uses AWS SAM: `sam build` packages the Lambda code + dependencies, and
+# `sam deploy` provisions the stack and uploads the code in one step.
 #
 # Usage:
 #   ./scripts/deploy.sh \
@@ -22,7 +25,7 @@ S3_BUCKET=""
 ENVIRONMENT_NAME=""
 WEATHER_API_KEY=""
 BEDROCK_MODEL_ID="us.anthropic.claude-sonnet-4-6"
-TEMPLATE_FILE="infrastructure/cloudformation-template.yaml"
+TEMPLATE_FILE="infrastructure/template.yaml"
 
 # -------------------------------------------------------
 # Parse arguments
@@ -70,28 +73,63 @@ if [[ -z "$WEATHER_API_KEY" ]]; then
   exit 1
 fi
 
+if ! command -v sam > /dev/null 2>&1; then
+  echo "ERROR: AWS SAM CLI is not installed."
+  echo "       Install it: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/install-sam-cli.html"
+  exit 1
+fi
+
 STACK_NAME="${ENVIRONMENT_NAME}-weather-agent"
 WEATHER_SECRET_NAME="${ENVIRONMENT_NAME}/weather-api-key"
 APIGW_SECRET_NAME="${ENVIRONMENT_NAME}/apigw-api-key"
+LAMBDA_FUNCTION_NAME="${ENVIRONMENT_NAME}-weather-agent"
+BUILD_DIR=".aws-sam/build"
 
 echo "============================================="
-echo " AgentCore Weather Agent Deployment"
+echo " AgentCore Weather Agent Deployment (SAM)"
 echo "============================================="
 echo " Environment : ${ENVIRONMENT_NAME}"
 echo " Region      : ${REGION}"
 echo " Stack       : ${STACK_NAME}"
 echo " Model       : ${BEDROCK_MODEL_ID}"
-echo " S3 Bucket   : ${S3_BUCKET:-<none — direct upload>}"
+echo " S3 Bucket   : ${S3_BUCKET:-<none — sam managed (--resolve-s3)>}"
 echo "============================================="
 
+# -------------------------------------------------------
+# Helper: run `sam deploy` with the given parameter overrides.
+# Reuses the already-built artifacts in .aws-sam/build.
+#
+#   sam_deploy "<parameter-overrides>"
+# -------------------------------------------------------
+sam_deploy() {
+  local param_overrides="$1"
+  local s3_args
+
+  if [[ -n "${S3_BUCKET}" ]]; then
+    s3_args="--s3-bucket ${S3_BUCKET} --s3-prefix ${STACK_NAME}"
+  else
+    s3_args="--resolve-s3"
+  fi
+
+  sam deploy \
+    --template-file "${BUILD_DIR}/template.yaml" \
+    --stack-name "${STACK_NAME}" \
+    --region "${REGION}" \
+    --capabilities CAPABILITY_NAMED_IAM \
+    --no-confirm-changeset \
+    --no-fail-on-empty-changeset \
+    ${s3_args} \
+    --parameter-overrides ${param_overrides}
+}
+
 # =============================================================================
-# Step 1: Validate CloudFormation template
+# Step 1: Validate SAM template
 # =============================================================================
 echo ""
-echo ">>> Step 1: Validating CloudFormation template..."
-aws cloudformation validate-template \
-  --template-body "file://${TEMPLATE_FILE}" \
-  --region "${REGION}" > /dev/null
+echo ">>> Step 1: Validating SAM template..."
+sam validate \
+  --template-file "${TEMPLATE_FILE}" \
+  --region "${REGION}"
 echo "    Template validation passed."
 
 # =============================================================================
@@ -141,53 +179,24 @@ APIGW_SECRET_ARN=$(aws secretsmanager describe-secret \
 echo "    APIGW secret ARN: ${APIGW_SECRET_ARN}"
 
 # =============================================================================
-# Step 3: Deploy CloudFormation stack
+# Step 3: Build the SAM application
+#
+# The Agent Lambda uses a Makefile custom build (BuildMethod: makefile in the
+# template). The Makefile downloads prebuilt manylinux wheels so binary
+# dependencies (cryptography, cffi) match the Lambda runtime on any host OS —
+# no Docker and no local python3.12 required.
 # =============================================================================
 echo ""
-echo ">>> Step 3: Deploying CloudFormation stack '${STACK_NAME}'..."
+echo ">>> Step 3: Building SAM application..."
+sam build --template-file "${TEMPLATE_FILE}"
+echo "    Build complete."
 
-STACK_EXISTS=$(aws cloudformation describe-stacks \
-  --stack-name "${STACK_NAME}" \
-  --region "${REGION}" \
-  --query 'Stacks[0].StackStatus' --output text 2>/dev/null || echo "DOES_NOT_EXIST")
-
-if [[ "${STACK_EXISTS}" == "DOES_NOT_EXIST" ]]; then
-  echo "    Creating new stack..."
-  aws cloudformation create-stack \
-    --stack-name "${STACK_NAME}" \
-    --template-body "file://${TEMPLATE_FILE}" \
-    --capabilities CAPABILITY_NAMED_IAM \
-    --region "${REGION}" \
-    --parameters \
-      ParameterKey=EnvironmentName,ParameterValue="${ENVIRONMENT_NAME}" \
-      ParameterKey=WeatherApiKeySecretArn,ParameterValue="${WEATHER_SECRET_ARN}" \
-      ParameterKey=BedrockModelId,ParameterValue="${BEDROCK_MODEL_ID}" > /dev/null
-
-  echo "    Waiting for stack creation to complete..."
-  aws cloudformation wait stack-create-complete \
-    --stack-name "${STACK_NAME}" \
-    --region "${REGION}"
-else
-  echo "    Updating existing stack..."
-  aws cloudformation update-stack \
-    --stack-name "${STACK_NAME}" \
-    --template-body "file://${TEMPLATE_FILE}" \
-    --capabilities CAPABILITY_NAMED_IAM \
-    --region "${REGION}" \
-    --parameters \
-      ParameterKey=EnvironmentName,ParameterValue="${ENVIRONMENT_NAME}" \
-      ParameterKey=WeatherApiKeySecretArn,ParameterValue="${WEATHER_SECRET_ARN}" \
-      ParameterKey=BedrockModelId,ParameterValue="${BEDROCK_MODEL_ID}" \
-      ParameterKey=CredentialProviderArn,UsePreviousValue=true > /dev/null 2>&1 || {
-        echo "    No updates to perform (stack is already up to date)."
-      }
-
-  echo "    Waiting for stack update to complete..."
-  aws cloudformation wait stack-update-complete \
-    --stack-name "${STACK_NAME}" \
-    --region "${REGION}" 2>/dev/null || true
-fi
-
+# =============================================================================
+# Step 4: Initial deploy (without credential provider)
+# =============================================================================
+echo ""
+echo ">>> Step 4: Deploying stack '${STACK_NAME}' (initial)..."
+sam_deploy "EnvironmentName=${ENVIRONMENT_NAME} WeatherApiKeySecretArn=${WEATHER_SECRET_ARN} BedrockModelId=${BEDROCK_MODEL_ID}"
 echo "    Stack deployment complete."
 
 # Retrieve stack outputs
@@ -220,10 +229,10 @@ echo "      Lambda ARN        : ${LAMBDA_ARN}"
 echo "      API Endpoint      : ${API_ENDPOINT_URL}"
 
 # =============================================================================
-# Step 4: Retrieve API Gateway key value and update Secrets Manager
+# Step 5: Retrieve API Gateway key value and update Secrets Manager
 # =============================================================================
 echo ""
-echo ">>> Step 4: Retrieving API Gateway key value..."
+echo ">>> Step 5: Retrieving API Gateway key value..."
 
 API_KEY_VALUE=$(aws apigateway get-api-key \
   --api-key "${API_KEY_ID}" \
@@ -239,7 +248,7 @@ fi
 echo "    API key retrieved successfully."
 
 echo ""
-echo ">>> Step 5: Updating Secrets Manager with real API Gateway key..."
+echo ">>> Step 6: Updating Secrets Manager with real API Gateway key..."
 aws secretsmanager put-secret-value \
   --secret-id "${APIGW_SECRET_NAME}" \
   --secret-string "${API_KEY_VALUE}" \
@@ -247,10 +256,14 @@ aws secretsmanager put-secret-value \
 echo "    APIGW key secret updated."
 
 # =============================================================================
-# Step 6: Create/update credential provider (CLI or manual)
+# Step 7: Create/update credential provider (CLI or manual)
+#
+# The AgentCore credential provider is provisioned via CLI between stack
+# operations: the API key only exists after the initial deploy, and its ARN
+# must be fed back into the stack via a follow-up deploy (Step 7b).
 # =============================================================================
 echo ""
-echo ">>> Step 6: Creating/updating credential provider..."
+echo ">>> Step 7: Creating/updating credential provider..."
 
 CRED_PROVIDER_NAME="${ENVIRONMENT_NAME}-weather-apigw-key"
 CRED_PROVIDER_ARN=""
@@ -307,22 +320,8 @@ if [[ -n "${CRED_PROVIDER_ARN}" && "${CRED_PROVIDER_ARN}" != "None" ]]; then
     --output text 2>/dev/null)
   echo "    Credential provider verified (last updated: ${VERIFY_TIME})"
   echo ""
-  echo ">>> Step 6b: Updating stack with credential provider ARN..."
-  aws cloudformation update-stack \
-    --stack-name "${STACK_NAME}" \
-    --template-body "file://${TEMPLATE_FILE}" \
-    --capabilities CAPABILITY_NAMED_IAM \
-    --region "${REGION}" \
-    --parameters \
-      ParameterKey=EnvironmentName,ParameterValue="${ENVIRONMENT_NAME}" \
-      ParameterKey=WeatherApiKeySecretArn,ParameterValue="${WEATHER_SECRET_ARN}" \
-      ParameterKey=BedrockModelId,ParameterValue="${BEDROCK_MODEL_ID}" \
-      ParameterKey=CredentialProviderArn,ParameterValue="${CRED_PROVIDER_ARN}" > /dev/null 2>&1 || {
-        echo "    No stack updates needed."
-      }
-  aws cloudformation wait stack-update-complete \
-    --stack-name "${STACK_NAME}" \
-    --region "${REGION}" 2>/dev/null || true
+  echo ">>> Step 7b: Re-deploying stack with credential provider ARN..."
+  sam_deploy "EnvironmentName=${ENVIRONMENT_NAME} WeatherApiKeySecretArn=${WEATHER_SECRET_ARN} BedrockModelId=${BEDROCK_MODEL_ID} CredentialProviderArn=${CRED_PROVIDER_ARN}"
   echo "    Stack updated with credential provider."
 else
   echo ""
@@ -349,113 +348,27 @@ else
   echo "   5. API Key: (run the command below to get the value)"
   echo "      aws apigateway get-api-key --api-key ${API_KEY_ID} --include-value --region ${REGION} --query 'value' --output text"
   echo ""
-  echo " After creating, update the stack with the credential provider ARN:"
+  echo " After creating, re-deploy with the credential provider ARN:"
   echo ""
-  echo "   aws cloudformation update-stack \\"
+  echo "   sam deploy \\"
+  echo "     --template-file ${BUILD_DIR}/template.yaml \\"
   echo "     --stack-name ${STACK_NAME} \\"
-  echo "     --template-body file://${TEMPLATE_FILE} \\"
   echo "     --capabilities CAPABILITY_NAMED_IAM \\"
   echo "     --region ${REGION} \\"
-  echo "     --parameters \\"
-  echo "       ParameterKey=EnvironmentName,ParameterValue=${ENVIRONMENT_NAME} \\"
-  echo "       ParameterKey=WeatherApiKeySecretArn,ParameterValue=${WEATHER_SECRET_ARN} \\"
-  echo "       ParameterKey=CredentialProviderArn,ParameterValue=<YOUR_CREDENTIAL_PROVIDER_ARN>"
+  echo "     --resolve-s3 \\"
+  echo "     --parameter-overrides \\"
+  echo "       EnvironmentName=${ENVIRONMENT_NAME} \\"
+  echo "       WeatherApiKeySecretArn=${WEATHER_SECRET_ARN} \\"
+  echo "       CredentialProviderArn=<YOUR_CREDENTIAL_PROVIDER_ARN>"
   echo ""
   echo "============================================="
 fi
 
 # =============================================================================
-# Step 7: Package Lambda code
+# Step 8: Create test user
 # =============================================================================
 echo ""
-echo ">>> Step 7: Packaging Lambda code..."
-
-PACKAGE_DIR=$(mktemp -d)
-ZIP_FILE="lambda-package.zip"
-
-echo "    Installing dependencies for python3.12 / x86_64..."
-pip3 install \
-  --target "${PACKAGE_DIR}" \
-  --platform manylinux2014_x86_64 \
-  --python-version 3.12 \
-  --only-binary=:all: \
-  -r requirements.txt \
-  --quiet
-
-echo "    Installing pure Python dependencies (requests, PyJWT)..."
-pip3 install \
-  --target "${PACKAGE_DIR}" \
-  --platform manylinux2014_x86_64 \
-  --python-version 3.12 \
-  --only-binary=:all: \
-  --no-deps \
-  requests urllib3 charset-normalizer idna certifi PyJWT cryptography cffi \
-  --quiet
-
-# Remove .egg-info directories only — preserve .dist-info (opentelemetry needs them)
-find "${PACKAGE_DIR}" -type d -name '*.egg-info' -exec rm -rf {} + 2>/dev/null || true
-
-echo "    Copying application code..."
-cp -r src/agent "${PACKAGE_DIR}/agent"
-cp -r src/shared "${PACKAGE_DIR}/shared"
-
-# Ensure __init__.py files exist
-touch "${PACKAGE_DIR}/agent/__init__.py" 2>/dev/null || true
-touch "${PACKAGE_DIR}/shared/__init__.py" 2>/dev/null || true
-
-echo "    Creating zip package..."
-(cd "${PACKAGE_DIR}" && zip -r -q "${OLDPWD}/${ZIP_FILE}" .)
-
-PACKAGE_SIZE=$(stat -f%z "${ZIP_FILE}" 2>/dev/null || stat -c%s "${ZIP_FILE}" 2>/dev/null)
-PACKAGE_SIZE_MB=$((PACKAGE_SIZE / 1024 / 1024))
-echo "    Package size: ${PACKAGE_SIZE_MB} MB (${PACKAGE_SIZE} bytes)"
-
-# =============================================================================
-# Step 8: Deploy Lambda code
-# =============================================================================
-echo ""
-echo ">>> Step 8: Deploying Lambda code..."
-
-LAMBDA_FUNCTION_NAME="${ENVIRONMENT_NAME}-weather-agent"
-FIFTY_MB=$((50 * 1024 * 1024))
-
-if [[ ${PACKAGE_SIZE} -gt ${FIFTY_MB} ]]; then
-  echo "    Package exceeds 50 MB — uploading to S3..."
-  if [[ -z "${S3_BUCKET}" ]]; then
-    echo "ERROR: Package is >50 MB but no --s3-bucket was provided."
-    echo "       Re-run with --s3-bucket <bucket-name>"
-    rm -rf "${PACKAGE_DIR}" "${ZIP_FILE}"
-    exit 1
-  fi
-
-  S3_KEY="${STACK_NAME}/lambda-package.zip"
-  aws s3 cp "${ZIP_FILE}" "s3://${S3_BUCKET}/${S3_KEY}" \
-    --region "${REGION}" --quiet
-  echo "    Uploaded to s3://${S3_BUCKET}/${S3_KEY}"
-
-  aws lambda update-function-code \
-    --function-name "${LAMBDA_FUNCTION_NAME}" \
-    --s3-bucket "${S3_BUCKET}" \
-    --s3-key "${S3_KEY}" \
-    --region "${REGION}" > /dev/null
-else
-  echo "    Deploying directly (package < 50 MB)..."
-  aws lambda update-function-code \
-    --function-name "${LAMBDA_FUNCTION_NAME}" \
-    --zip-file "fileb://${ZIP_FILE}" \
-    --region "${REGION}" > /dev/null
-fi
-
-echo "    Lambda code deployed."
-
-# Cleanup
-rm -rf "${PACKAGE_DIR}" "${ZIP_FILE}"
-
-# =============================================================================
-# Step 9: Create test user
-# =============================================================================
-echo ""
-echo ">>> Step 9: Creating test user..."
+echo ">>> Step 8: Creating test user..."
 
 TEST_USERNAME="testuser"
 TEST_PASSWORD="TestPass123!"

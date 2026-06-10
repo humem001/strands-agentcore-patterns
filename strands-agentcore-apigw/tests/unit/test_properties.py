@@ -42,6 +42,23 @@ def _collect_actions_from_policies(role_resource):
     return actions
 
 
+def _collect_actions_from_sam_function_policies(function_resource):
+    """Extract all actions from the Policies list of an AWS::Serverless::Function.
+
+    SAM function Policies are a list of {"Statement": [...]} blocks rather than
+    the {"PolicyName", "PolicyDocument"} shape used by AWS::IAM::Role.
+    """
+    actions = set()
+    for policy in function_resource["Properties"].get("Policies", []):
+        statements = policy.get("Statement", []) if isinstance(policy, dict) else []
+        for stmt in statements:
+            stmt_actions = stmt.get("Action", [])
+            if isinstance(stmt_actions, str):
+                stmt_actions = [stmt_actions]
+            actions.update(stmt_actions)
+    return actions
+
+
 def _collect_resources_from_policies(role_resource):
     """Extract all resource ARNs (as strings) from all policy statements."""
     arns = []
@@ -187,8 +204,9 @@ class TestProperty2BedrockActions:
     @settings(max_examples=100)
     def test_lambda_role_includes_all_bedrock_actions(self, resources, subset):
         """For any random subset of the 4 required Bedrock actions, verify the
-        Lambda role always contains the full required set (not just the subset)."""
-        role_actions = _collect_actions_from_policies(resources["AgentLambdaRole"])
+        Lambda function's inline policies always contain the full required set
+        (not just the subset). SAM generates the execution role from these."""
+        role_actions = _collect_actions_from_sam_function_policies(resources["AgentLambdaFunction"])
 
         # Regardless of which subset we picked, the full set must be present
         assert role_includes_all_bedrock_actions(role_actions, self.REQUIRED_BEDROCK_ACTIONS), (
