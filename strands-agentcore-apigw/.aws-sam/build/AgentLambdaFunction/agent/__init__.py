@@ -1,1 +1,0 @@
-"""Agent Lambda implementation."""
