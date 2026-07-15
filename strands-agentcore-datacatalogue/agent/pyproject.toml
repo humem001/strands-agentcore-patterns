@@ -1,9 +1,16 @@
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
-name = "dwp-demo-agent"
+name = "runtimedeploy"
 version = "0.1.0"
 requires-python = ">=3.10"
+
 dependencies = [
-    "strands-agents>=0.1.0",
-    "strands-agents-bedrock>=0.1.0",
-    "bedrock-agentcore>=0.1.0",
+    "bedrock-agentcore >= 1.0.3",
+    "mcp >= 1.19.0",
+    "strands-agents >= 1.13.0",
+    "requests >= 2.31.0",
 ]

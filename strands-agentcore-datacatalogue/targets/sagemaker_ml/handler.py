@@ -99,16 +99,22 @@ TOOLS = {
 }
 
 
+def _resolve_tool_name(event, context):
+    try:
+        return context.client_context.custom["bedrockAgentCoreToolName"].split("___")[-1]
+    except Exception:
+        return event.get("tool_name", "") if isinstance(event, dict) else ""
+
+
 def handler(event, context):
-    tool_name = event.get("tool_name", "")
-    parameters = event.get("parameters", {})
+    tool_name = _resolve_tool_name(event, context)
+    parameters = event.get("parameters", event) if isinstance(event, dict) else {}
 
     tool_fn = TOOLS.get(tool_name)
     if not tool_fn:
-        return {"statusCode": 400, "body": {"error": f"Unknown tool: {tool_name}"}}
+        return {"error": f"Unknown tool: {tool_name}"}
 
     try:
-        result = tool_fn(parameters)
-        return {"statusCode": 200, "body": result}
+        return tool_fn(parameters)
     except Exception as e:
-        return {"statusCode": 500, "body": {"error": str(e)}}
+        return {"error": str(e)}

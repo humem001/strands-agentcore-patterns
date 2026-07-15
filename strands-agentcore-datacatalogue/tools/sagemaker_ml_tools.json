@@ -16,7 +16,7 @@
     "inputSchema": {
       "type": "object",
       "properties": {
-        "asset_type": {"type": "string", "description": "'model' or 'feature_group'", "enum": ["model", "feature_group"]},
+        "asset_type": {"type": "string", "description": "Either 'model' or 'feature_group'"},
         "asset_name": {"type": "string", "description": "Name of the model package group or feature group"}
       },
       "required": ["asset_type", "asset_name"]

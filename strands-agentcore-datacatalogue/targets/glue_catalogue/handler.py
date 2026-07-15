@@ -130,25 +130,22 @@ TOOLS = {
 }
 
 
-def handler(event, context):
+def _resolve_tool_name(event, context):
     try:
-        body = event if isinstance(event, dict) else json.loads(event)
-        tool_name = body["tool_name"]
-        parameters = body.get("parameters", {})
+        name = context.client_context.custom["bedrockAgentCoreToolName"]
+        return name.split("___")[-1]
+    except Exception:
+        body = event if isinstance(event, dict) else {}
+        return body.get("tool_name")
 
+
+def handler(event, context):
+    body = event if isinstance(event, dict) else json.loads(event)
+    tool_name = _resolve_tool_name(event, context)
+    parameters = body.get("parameters", body)
+    try:
         if tool_name not in TOOLS:
-            return {
-                "statusCode": 400,
-                "body": json.dumps({"error": f"Unknown tool: {tool_name}"}),
-            }
-
-        result = TOOLS[tool_name](parameters)
-        return {
-            "statusCode": 200,
-            "body": json.dumps(result, default=str),
-        }
+            return {"error": f"Unknown tool: {tool_name}"}
+        return TOOLS[tool_name](parameters)
     except ClientError as e:
-        return {
-            "statusCode": 500,
-            "body": json.dumps({"error": str(e)}),
-        }
+        return {"error": str(e)}

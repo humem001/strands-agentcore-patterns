@@ -31,12 +31,12 @@ def query_dataset(parameters):
             break
         if state == "FAILED":
             reason = response["QueryExecution"]["Status"].get("StateChangeReason", "Unknown error")
-            return {"statusCode": 500, "body": {"error": f"Query failed: {reason}"}}
+            return {"error": f"Query failed: {reason}"}
         time.sleep(1)
         elapsed += 1
 
     if state != "SUCCEEDED":
-        return {"statusCode": 500, "body": {"error": "Query timed out after 30 seconds"}}
+        return {"error": "Query timed out after 30 seconds"}
 
     results = athena.get_query_results(QueryExecutionId=execution_id, MaxResults=101)
     columns = [col["Name"] for col in results["ResultSet"]["ResultSetMetadata"]["ColumnInfo"]]
@@ -44,22 +44,21 @@ def query_dataset(parameters):
     for row in results["ResultSet"]["Rows"][1:]:
         rows.append({columns[i]: (datum.get("VarCharValue", "") if datum else "") for i, datum in enumerate(row["Data"])})
 
-    return {
-        "statusCode": 200,
-        "body": {
-            "sql": sql,
-            "columns": columns,
-            "rows": rows,
-            "row_count": len(rows),
-        },
-    }
+    return {"sql": sql, "columns": columns, "rows": rows, "row_count": len(rows)}
+
+
+def _resolve_tool_name(event, context):
+    try:
+        return context.client_context.custom["bedrockAgentCoreToolName"].split("___")[-1]
+    except Exception:
+        return event.get("tool_name", "") if isinstance(event, dict) else ""
 
 
 def handler(event, context):
-    tool_name = event.get("tool_name", "")
-    parameters = event.get("parameters", {})
+    tool_name = _resolve_tool_name(event, context)
+    parameters = event.get("parameters", event) if isinstance(event, dict) else {}
 
     if tool_name == "query_dataset":
         return query_dataset(parameters)
 
-    return {"statusCode": 400, "body": {"error": f"Unknown tool: {tool_name}"}}
+    return {"error": f"Unknown tool: {tool_name}"}

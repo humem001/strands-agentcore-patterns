@@ -7,14 +7,21 @@ glue = boto3.client("glue")
 DEFAULT_DATABASE = os.environ.get("GLUE_DATABASE", "dwp_data_catalogue")
 
 
+def _resolve_tool_name(event, context):
+    try:
+        return context.client_context.custom["bedrockAgentCoreToolName"].split("___")[-1]
+    except Exception:
+        return event.get("tool_name") if isinstance(event, dict) else None
+
+
 def handler(event, context):
-    tool_name = event.get("tool_name")
-    parameters = event.get("parameters", {})
+    tool_name = _resolve_tool_name(event, context)
+    parameters = event.get("parameters", event) if isinstance(event, dict) else {}
 
     if tool_name == "classify_pii":
         return classify_pii(parameters)
 
-    return {"statusCode": 400, "body": {"error": f"Unknown tool: {tool_name}"}}
+    return {"error": f"Unknown tool: {tool_name}"}
 
 
 def classify_pii(parameters):
@@ -42,4 +49,4 @@ def classify_pii(parameters):
     if pii_samples:
         result["pii_samples"] = json.loads(pii_samples)
 
-    return {"statusCode": 200, "body": result}
+    return result

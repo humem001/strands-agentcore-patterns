@@ -38,3 +38,6 @@ spike/.bedrock_agentcore/
 
 # Local Claude Code settings
 .claude/settings.local.json
+
+# Machine-generated Gateway deploy state (account IDs/ARNs)
+gateway-outputs.json
