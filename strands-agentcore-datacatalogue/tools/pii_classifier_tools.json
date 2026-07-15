@@ -1,0 +1,14 @@
+[
+  {
+    "name": "classify_pii",
+    "description": "Get column metadata for a table (names, types, descriptions). The orchestrator uses this to classify PII levels.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "database": {"type": "string", "description": "Glue database name"},
+        "table_name": {"type": "string", "description": "Table name to get column metadata for"}
+      },
+      "required": ["database", "table_name"]
+    }
+  }
+]

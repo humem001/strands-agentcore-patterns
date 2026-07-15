@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+dist/
+build/
+
+# CDK
+cdk.out/
+cdk-outputs.json
+
+# Generated data
+data/parquet/
+
+# Deployment artifacts
+*.zip
+agentcore-outputs.json
+
+# Environment
+.env
+.env.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+
+# AgentCore deploy state (machine-generated, contains account ID/ARNs)
+.bedrock_agentcore.yaml
+.bedrock_agentcore/
+spike/.bedrock_agentcore.yaml
+spike/.bedrock_agentcore/
+
+# Local Claude Code settings
+.claude/settings.local.json

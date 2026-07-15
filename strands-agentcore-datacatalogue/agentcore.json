@@ -1,0 +1,77 @@
+{
+  "project": {
+    "name": "dwp-demo-agent"
+  },
+  "agents": [
+    {
+      "name": "DwpDataAgent",
+      "entryPoint": ["agent/agent.py"],
+      "deploymentType": "direct_code_deploy",
+      "protocol": "HTTP",
+      "region": "eu-west-2",
+      "environment": {
+        "GATEWAY_URL": "{{GATEWAY_URL}}"
+      }
+    }
+  ],
+  "gateways": [
+    {
+      "name": "dwp-demo-gateway",
+      "authorizerConfig": {
+        "type": "CUSTOM_JWT",
+        "jwtConfiguration": {
+          "discoveryUrl": "https://cognito-idp.eu-west-2.amazonaws.com/{{COGNITO_POOL_ID}}/.well-known/openid-configuration"
+        }
+      },
+      "targets": [
+        {
+          "name": "glue-catalogue",
+          "type": "lambda",
+          "lambdaArn": "{{LAMBDA_ARN_GLUE}}",
+          "authType": "GATEWAY_IAM_ROLE",
+          "toolSchemaFile": "tools/glue_catalogue_tools.json"
+        },
+        {
+          "name": "athena-query",
+          "type": "lambda",
+          "lambdaArn": "{{LAMBDA_ARN_ATHENA}}",
+          "authType": "GATEWAY_IAM_ROLE",
+          "toolSchemaFile": "tools/athena_query_tools.json"
+        },
+        {
+          "name": "sagemaker-ml",
+          "type": "lambda",
+          "lambdaArn": "{{LAMBDA_ARN_SAGEMAKER}}",
+          "authType": "GATEWAY_IAM_ROLE",
+          "toolSchemaFile": "tools/sagemaker_ml_tools.json"
+        },
+        {
+          "name": "pii-classifier",
+          "type": "lambda",
+          "lambdaArn": "{{LAMBDA_ARN_PII}}",
+          "authType": "GATEWAY_IAM_ROLE",
+          "toolSchemaFile": "tools/pii_classifier_tools.json"
+        },
+        {
+          "name": "governance-kb",
+          "type": "lambda",
+          "lambdaArn": "{{LAMBDA_ARN_KB}}",
+          "authType": "GATEWAY_IAM_ROLE",
+          "toolSchemaFile": "tools/governance_kb_tools.json"
+        }
+      ]
+    }
+  ],
+  "identityProviders": [
+    {
+      "name": "dwp-demo-cognito",
+      "type": "OAUTH2",
+      "oauth2Config": {
+        "tokenUrl": "{{COGNITO_TOKEN_ENDPOINT}}",
+        "clientId": "{{COGNITO_M2M_CLIENT_ID}}",
+        "clientSecret": "{{COGNITO_M2M_CLIENT_SECRET}}",
+        "scopes": ["dwp-demo-api/gateway.tools"]
+      }
+    }
+  ]
+}

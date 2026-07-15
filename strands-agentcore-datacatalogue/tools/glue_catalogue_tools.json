@@ -1,0 +1,60 @@
+[
+  {
+    "name": "search_catalogue",
+    "description": "Search the DWP data catalogue for datasets matching a natural language query. Returns table names, descriptions, classifications, and owners.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "query": {"type": "string", "description": "Natural language search query (e.g., 'fraud datasets', 'payment history')"}
+      },
+      "required": ["query"]
+    }
+  },
+  {
+    "name": "get_dataset_detail",
+    "description": "Get full details of a specific dataset including columns, types, descriptions, properties, S3 location, owner, and steward.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "database": {"type": "string", "description": "Glue database name"},
+        "table_name": {"type": "string", "description": "Table name to describe"}
+      },
+      "required": ["database", "table_name"]
+    }
+  },
+  {
+    "name": "show_lineage",
+    "description": "Show data lineage for a dataset: upstream sources, transformation description, and downstream consumers.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "database": {"type": "string", "description": "Glue database name"},
+        "table_name": {"type": "string", "description": "Table name to trace lineage for"}
+      },
+      "required": ["database", "table_name"]
+    }
+  },
+  {
+    "name": "generate_metadata",
+    "description": "Get a table's schema and properties to generate FAIR-compliant metadata descriptions. Write-back is disabled by default.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "database": {"type": "string", "description": "Glue database name"},
+        "table_name": {"type": "string", "description": "Table name to generate metadata for"}
+      },
+      "required": ["database", "table_name"]
+    }
+  },
+  {
+    "name": "suggest_joins",
+    "description": "Get all table schemas in the catalogue to recommend joins for an analytical goal.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "goal": {"type": "string", "description": "Analytical goal (e.g., 'link fraud referrals to payment history')"}
+      },
+      "required": ["goal"]
+    }
+  }
+]

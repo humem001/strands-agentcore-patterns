@@ -1,0 +1,14 @@
+[
+  {
+    "name": "query_dataset",
+    "description": "Execute a SQL query on Amazon Athena against the DWP data catalogue. The orchestrator generates the SQL; this tool executes it and returns results.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "sql": {"type": "string", "description": "SQL query to execute (SELECT only, must include LIMIT)"},
+        "database": {"type": "string", "description": "Glue database name"}
+      },
+      "required": ["sql", "database"]
+    }
+  }
+]

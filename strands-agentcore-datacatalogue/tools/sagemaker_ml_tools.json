@@ -1,0 +1,25 @@
+[
+  {
+    "name": "list_ml_models",
+    "description": "List SageMaker model package groups and feature groups in the DWP account. Optionally filter by keyword.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "query": {"type": "string", "description": "Optional keyword to filter models/features by name or description"}
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "describe_ml_asset",
+    "description": "Get detailed information about a specific SageMaker model or feature group, including features, metrics, and data lineage.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "asset_type": {"type": "string", "description": "'model' or 'feature_group'", "enum": ["model", "feature_group"]},
+        "asset_name": {"type": "string", "description": "Name of the model package group or feature group"}
+      },
+      "required": ["asset_type", "asset_name"]
+    }
+  }
+]

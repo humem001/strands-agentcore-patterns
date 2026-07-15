@@ -1,0 +1,550 @@
+database: dwp_data_catalogue
+
+tables:
+  - name: cms_payment_history
+    description: "Monthly Collect & Pay payment records for Child Maintenance Service cases"
+    classification: HIGH
+    owner: "Child Maintenance Data Team"
+    steward: "A. Patel"
+    pdu: "Child Maintenance"
+    location_suffix: "cms_payment_history/"
+    row_count: 200
+    lineage:
+      upstream: ["CMS2012 Operational System (external)"]
+      downstream: ["cms_compliance_predictions", "service_performance_kpis"]
+      transformation: "Daily ETL extract from CMS2012, loaded via Children Data Platform"
+    columns:
+      - name: record_id
+        type: string
+        description: "Unique payment record identifier"
+        pii: NONE
+      - name: nino
+        type: string
+        description: "National Insurance Number of paying parent"
+        pii: HIGH
+      - name: paying_parent_name
+        type: string
+        description: "Full name of the paying parent"
+        pii: MEDIUM
+      - name: receiving_parent_name
+        type: string
+        description: "Full name of the receiving parent"
+        pii: MEDIUM
+      - name: case_id
+        type: string
+        description: "CMS case reference number"
+        pii: LOW
+      - name: payment_date
+        type: date
+        description: "Date the payment was due"
+        pii: NONE
+      - name: amount_due
+        type: double
+        description: "Amount due in GBP"
+        pii: NONE
+      - name: amount_paid
+        type: double
+        description: "Amount actually paid in GBP"
+        pii: NONE
+      - name: payment_method
+        type: string
+        description: "Payment method (Collect & Pay, Direct Pay)"
+        pii: NONE
+      - name: compliance_status
+        type: string
+        description: "Whether payment was on time, late, or missed"
+        pii: NONE
+      - name: date_of_birth
+        type: date
+        description: "Paying parent date of birth"
+        pii: LOW
+      - name: postcode
+        type: string
+        description: "Paying parent residential postcode"
+        pii: LOW
+      - name: bank_sort_code
+        type: string
+        description: "Bank sort code for payment collection"
+        pii: HIGH
+
+  - name: cms_compliance_predictions
+    description: "XGBoost risk scores predicting payment non-compliance for CMS cases"
+    classification: MEDIUM
+    owner: "Child Maintenance Data Team"
+    steward: "A. Patel"
+    pdu: "Child Maintenance"
+    location_suffix: "cms_compliance_predictions/"
+    row_count: 200
+    lineage:
+      upstream: ["cms_payment_history", "CMS2012 change of circumstances (external)"]
+      downstream: ["CMS2012 caseworker screens (external)", "service_performance_kpis"]
+      transformation: "Monthly SageMaker batch pipeline — XGBoost + SHAP"
+    columns:
+      - name: case_id
+        type: string
+        description: "CMS case reference number"
+        pii: LOW
+      - name: nino
+        type: string
+        description: "National Insurance Number of paying parent"
+        pii: HIGH
+      - name: prediction_date
+        type: date
+        description: "Date the prediction was generated"
+        pii: NONE
+      - name: risk_score
+        type: double
+        description: "Non-compliance risk score (0.0 - 1.0)"
+        pii: NONE
+      - name: risk_category
+        type: string
+        description: "Risk band (HIGH / MEDIUM / LOW)"
+        pii: NONE
+      - name: top_feature_1
+        type: string
+        description: "Most influential SHAP feature"
+        pii: NONE
+      - name: top_feature_2
+        type: string
+        description: "Second most influential SHAP feature"
+        pii: NONE
+      - name: payment_gap_days
+        type: int
+        description: "Days since last on-time payment"
+        pii: NONE
+      - name: change_of_circs_count
+        type: int
+        description: "Number of change-of-circumstances events in last 12 months"
+        pii: NONE
+
+  - name: uc_claimant_journal
+    description: "Work search journal entries from Universal Credit claimants"
+    classification: HIGH
+    owner: "Universal Credit Data Team"
+    steward: "R. Okafor"
+    pdu: "Universal Credit"
+    location_suffix: "uc_claimant_journal/"
+    row_count: 150
+    lineage:
+      upstream: ["Universal Credit Full Service (external)"]
+      downstream: ["fraud_referral_outcomes", "jcs_chatbot_interactions"]
+      transformation: "Real-time event stream, daily Parquet partitioned by date"
+    columns:
+      - name: journal_id
+        type: string
+        description: "Unique journal entry identifier"
+        pii: NONE
+      - name: claimant_id
+        type: string
+        description: "UC claimant identifier"
+        pii: MEDIUM
+      - name: nino
+        type: string
+        description: "National Insurance Number"
+        pii: HIGH
+      - name: full_name
+        type: string
+        description: "Claimant full name"
+        pii: MEDIUM
+      - name: entry_date
+        type: date
+        description: "Date of journal entry"
+        pii: NONE
+      - name: entry_text
+        type: string
+        description: "Free text work search activity description"
+        pii: LOW
+      - name: activity_type
+        type: string
+        description: "Type of activity (job application, interview, training)"
+        pii: NONE
+      - name: verified
+        type: boolean
+        description: "Whether the entry was verified by a work coach"
+        pii: NONE
+      - name: phone_number
+        type: string
+        description: "Contact phone number"
+        pii: LOW
+
+  - name: uc_payment_calculations
+    description: "Monthly Universal Credit payment calculations including elements and deductions"
+    classification: HIGH
+    owner: "Universal Credit Data Team"
+    steward: "R. Okafor"
+    pdu: "Universal Credit"
+    location_suffix: "uc_payment_calculations/"
+    row_count: 150
+    lineage:
+      upstream: ["Universal Credit Full Service (external)", "HMRC RTI feed (external)"]
+      downstream: ["service_performance_kpis"]
+      transformation: "Monthly calculation engine output, extracted to analytics platform"
+    columns:
+      - name: calculation_id
+        type: string
+        description: "Unique calculation identifier"
+        pii: NONE
+      - name: claimant_id
+        type: string
+        description: "UC claimant identifier"
+        pii: MEDIUM
+      - name: nino
+        type: string
+        description: "National Insurance Number"
+        pii: HIGH
+      - name: assessment_period_start
+        type: date
+        description: "Start of assessment period"
+        pii: NONE
+      - name: assessment_period_end
+        type: date
+        description: "End of assessment period"
+        pii: NONE
+      - name: standard_allowance
+        type: double
+        description: "Standard allowance amount in GBP"
+        pii: NONE
+      - name: housing_element
+        type: double
+        description: "Housing cost element in GBP"
+        pii: NONE
+      - name: childcare_element
+        type: double
+        description: "Childcare element in GBP"
+        pii: NONE
+      - name: earned_income
+        type: double
+        description: "Reported earned income in GBP"
+        pii: NONE
+      - name: total_payment
+        type: double
+        description: "Total UC payment amount in GBP"
+        pii: NONE
+      - name: address
+        type: string
+        description: "Claimant residential address"
+        pii: HIGH
+      - name: bank_sort_code
+        type: string
+        description: "Payment destination sort code"
+        pii: HIGH
+      - name: bank_account_number
+        type: string
+        description: "Payment destination account number"
+        pii: HIGH
+
+  - name: pension_credit_eligibility
+    description: "Pension Credit eligibility assessments for older claimants"
+    classification: HIGH
+    owner: "Later Life Data Team"
+    steward: "M. Henderson"
+    pdu: "Later Life"
+    location_suffix: "pension_credit_eligibility/"
+    row_count: 100
+    lineage:
+      upstream: ["State Pension system (external)", "HMRC income data (external)"]
+      downstream: ["service_performance_kpis"]
+      transformation: "Weekly batch assessment from eligibility rules engine"
+    columns:
+      - name: assessment_id
+        type: string
+        description: "Unique assessment identifier"
+        pii: NONE
+      - name: nino
+        type: string
+        description: "National Insurance Number"
+        pii: HIGH
+      - name: full_name
+        type: string
+        description: "Claimant full name"
+        pii: MEDIUM
+      - name: date_of_birth
+        type: date
+        description: "Claimant date of birth"
+        pii: LOW
+      - name: assessment_date
+        type: date
+        description: "Date of eligibility assessment"
+        pii: NONE
+      - name: eligible
+        type: boolean
+        description: "Whether claimant is eligible for Pension Credit"
+        pii: NONE
+      - name: weekly_income
+        type: double
+        description: "Assessed weekly income in GBP"
+        pii: NONE
+      - name: savings_amount
+        type: double
+        description: "Total savings and capital in GBP"
+        pii: NONE
+      - name: partner_nino
+        type: string
+        description: "Partner National Insurance Number (if applicable)"
+        pii: HIGH
+      - name: postcode
+        type: string
+        description: "Residential postcode"
+        pii: LOW
+
+  - name: fraud_referral_outcomes
+    description: "Fraud and error investigation referrals and their outcomes"
+    classification: HIGH
+    owner: "Counter Fraud Data Team"
+    steward: "S. Lewis"
+    pdu: "Fraud & Error"
+    location_suffix: "fraud_referral_outcomes/"
+    row_count: 100
+    lineage:
+      upstream: ["uc_claimant_journal", "cms_payment_history", "HMRC RTI feed (external)"]
+      downstream: ["service_performance_kpis"]
+      transformation: "Rules engine + ML model referrals, outcomes logged by investigators"
+    columns:
+      - name: referral_id
+        type: string
+        description: "Unique referral identifier"
+        pii: NONE
+      - name: nino
+        type: string
+        description: "National Insurance Number of subject"
+        pii: HIGH
+      - name: full_name
+        type: string
+        description: "Subject full name"
+        pii: MEDIUM
+      - name: referral_date
+        type: date
+        description: "Date referral was raised"
+        pii: NONE
+      - name: referral_source
+        type: string
+        description: "Source of referral (ML model, rules engine, manual)"
+        pii: NONE
+      - name: fraud_type
+        type: string
+        description: "Type of suspected fraud (identity, undeclared income, living together)"
+        pii: NONE
+      - name: outcome
+        type: string
+        description: "Investigation outcome (confirmed, not proven, no case to answer)"
+        pii: NONE
+      - name: overpayment_amount
+        type: double
+        description: "Confirmed overpayment amount in GBP"
+        pii: NONE
+      - name: investigation_duration_days
+        type: int
+        description: "Days from referral to outcome"
+        pii: NONE
+      - name: benefit_type
+        type: string
+        description: "Benefit involved (UC, CMS, Pension Credit)"
+        pii: NONE
+
+  - name: dwp_staff_training_records
+    description: "Staff training and certification completion records"
+    classification: MEDIUM
+    owner: "People & Capability Data Team"
+    steward: "J. Barker"
+    pdu: "People & Capability"
+    location_suffix: "dwp_staff_training_records/"
+    row_count: 100
+    lineage:
+      upstream: ["Learning Management System (external)"]
+      downstream: ["service_performance_kpis"]
+      transformation: "Daily sync from LMS, aggregated to completion events"
+    columns:
+      - name: record_id
+        type: string
+        description: "Training record identifier"
+        pii: NONE
+      - name: staff_id
+        type: string
+        description: "DWP staff identifier"
+        pii: MEDIUM
+      - name: full_name
+        type: string
+        description: "Staff member full name"
+        pii: MEDIUM
+      - name: email
+        type: string
+        description: "Staff email address"
+        pii: MEDIUM
+      - name: course_name
+        type: string
+        description: "Name of training course"
+        pii: NONE
+      - name: course_category
+        type: string
+        description: "Category (mandatory, elective, specialist)"
+        pii: NONE
+      - name: completion_date
+        type: date
+        description: "Date course was completed"
+        pii: NONE
+      - name: score_percent
+        type: int
+        description: "Assessment score percentage"
+        pii: NONE
+      - name: certified
+        type: boolean
+        description: "Whether certification was awarded"
+        pii: NONE
+      - name: directorate
+        type: string
+        description: "DWP directorate"
+        pii: NONE
+
+  - name: jcs_chatbot_interactions
+    description: "Job Centre Services chatbot conversation logs for work search support"
+    classification: LOW
+    owner: "Working Age Services Data Team"
+    steward: "T. Williams"
+    pdu: "Working Age Services"
+    location_suffix: "jcs_chatbot_interactions/"
+    row_count: 100
+    lineage:
+      upstream: ["uc_claimant_journal", "JCS Chatbot Platform (external)"]
+      downstream: []
+      transformation: "Real-time log capture from chatbot platform, PII redacted on ingest"
+    columns:
+      - name: interaction_id
+        type: string
+        description: "Unique interaction identifier"
+        pii: NONE
+      - name: session_id
+        type: string
+        description: "Chatbot session identifier"
+        pii: NONE
+      - name: timestamp
+        type: timestamp
+        description: "Interaction timestamp"
+        pii: NONE
+      - name: user_message
+        type: string
+        description: "User message (PII redacted)"
+        pii: NONE
+      - name: bot_response
+        type: string
+        description: "Chatbot response text"
+        pii: NONE
+      - name: intent_detected
+        type: string
+        description: "Detected user intent"
+        pii: NONE
+      - name: confidence_score
+        type: double
+        description: "Intent classification confidence (0.0 - 1.0)"
+        pii: NONE
+      - name: escalated_to_human
+        type: boolean
+        description: "Whether interaction was escalated to a human agent"
+        pii: NONE
+      - name: region
+        type: string
+        description: "Job centre region"
+        pii: NONE
+
+  - name: service_performance_kpis
+    description: "Cross-DWP operational KPI aggregates by service line and period"
+    classification: NONE
+    owner: "Performance & Analytics Team"
+    steward: "K. Ng"
+    pdu: "Cross-DWP"
+    location_suffix: "service_performance_kpis/"
+    row_count: 50
+    lineage:
+      upstream: ["cms_payment_history", "cms_compliance_predictions", "uc_payment_calculations", "fraud_referral_outcomes", "dwp_staff_training_records"]
+      downstream: []
+      transformation: "Monthly aggregate pipeline from source operational datasets"
+    columns:
+      - name: kpi_id
+        type: string
+        description: "KPI record identifier"
+        pii: NONE
+      - name: service_line
+        type: string
+        description: "DWP service line (CMS, UC, Pension Credit, Fraud)"
+        pii: NONE
+      - name: metric_name
+        type: string
+        description: "KPI metric name"
+        pii: NONE
+      - name: metric_value
+        type: double
+        description: "KPI metric value"
+        pii: NONE
+      - name: period_start
+        type: date
+        description: "Reporting period start date"
+        pii: NONE
+      - name: period_end
+        type: date
+        description: "Reporting period end date"
+        pii: NONE
+      - name: target_value
+        type: double
+        description: "Target threshold for the KPI"
+        pii: NONE
+      - name: rag_status
+        type: string
+        description: "RAG status (Red, Amber, Green)"
+        pii: NONE
+      - name: trend
+        type: string
+        description: "Trend direction (improving, stable, declining)"
+        pii: NONE
+
+  - name: config_resource_inventory
+    description: "AWS Config resource inventory for DWP cloud infrastructure"
+    classification: NONE
+    owner: "Cloud Platform Team"
+    steward: "D. Ahmed"
+    pdu: "Platform/Cloud"
+    location_suffix: "config_resource_inventory/"
+    row_count: 50
+    lineage:
+      upstream: ["AWS Config (external)"]
+      downstream: []
+      transformation: "Daily snapshot from AWS Config aggregator"
+    columns:
+      - name: resource_id
+        type: string
+        description: "AWS resource identifier"
+        pii: NONE
+      - name: resource_type
+        type: string
+        description: "AWS resource type (e.g. AWS::EC2::Instance)"
+        pii: NONE
+      - name: resource_name
+        type: string
+        description: "Resource name tag value"
+        pii: NONE
+      - name: account_id
+        type: string
+        description: "AWS account ID"
+        pii: NONE
+      - name: region
+        type: string
+        description: "AWS region"
+        pii: NONE
+      - name: creation_date
+        type: date
+        description: "Resource creation date"
+        pii: NONE
+      - name: compliance_status
+        type: string
+        description: "Config rule compliance status (COMPLIANT, NON_COMPLIANT)"
+        pii: NONE
+      - name: last_evaluated
+        type: timestamp
+        description: "Last compliance evaluation timestamp"
+        pii: NONE
+      - name: owning_team
+        type: string
+        description: "Team responsible for the resource"
+        pii: NONE
+      - name: environment
+        type: string
+        description: "Environment tag (prod, staging, dev)"
+        pii: NONE
