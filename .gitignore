@@ -1,3 +1,5 @@
 
 # AgentCore runtime deploy scaffold (machine-generated deploy state)
 runtimedeploy/
+
+.DS_Store
