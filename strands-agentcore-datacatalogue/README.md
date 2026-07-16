@@ -20,18 +20,14 @@ Insurance numbers or case references.
 ## Why build this?
 
 Amazon **DataZone / SageMaker Catalog** is the right answer for a *production*
-data catalogue. This project is **not** trying to replace it.
+data catalogue. This project is **not** trying to replace it. DataZone gives you
+a catalogue portal. This app gives you a **transparent AI agent that orchestrates
+across the catalogue and beyond**. They solve different problems — and in a
+production world you'd likely use both (DataZone as the governed catalogue, an
+agent like this as the conversational interface layer on top).
 
-**The one-line positioning:** DataZone gives you a *catalogue portal*. This gives
-you a **transparent AI agent that orchestrates across the catalogue and beyond**.
-They solve different problems — and in a production world you'd likely use both
-(DataZone as the governed catalogue, an agent like this as the conversational
-interface layer on top).
-
-**The demo's value isn't "we built a catalogue"** — it's "we built the **agentic
-pattern** (Strands + AgentCore + Gateway) that can sit on top of *any* set of
-services and orchestrate them transparently." The catalogue is just the relatable
-use case to show it.
+The demo demonstrates an **agentic pattern** (Strands + AgentCore + Gateway) that
+can sit on top of any set of services and orchestrate them transparently.
 
 ### What it demonstrates
 
