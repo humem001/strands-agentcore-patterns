@@ -54,6 +54,8 @@ def make_mcp_client() -> MCPClient:
 
 @app.entrypoint
 async def invoke(payload, context=None):
+    import json as _json
+
     user_message = payload.get("prompt", "Hello")
     mcp_client = make_mcp_client()
     with mcp_client:
@@ -63,11 +65,34 @@ async def invoke(payload, context=None):
             system_prompt=SYSTEM_PROMPT,
             tools=tools,
         )
+        seen_tool_ids = set()
+        pending_markers = []
         async for event in agent.stream_async(user_message):
+            if not isinstance(event, dict):
+                continue
+
+            # Tool use — queue a marker to inject with the next text yield
+            tu = event.get("current_tool_use")
+            if tu and isinstance(tu, dict):
+                tool_id = tu.get("toolUseId", "")
+                name = tu.get("name", "")
+                inp = tu.get("input")
+                if tool_id and name and isinstance(inp, dict) and tool_id not in seen_tool_ids:
+                    seen_tool_ids.add(tool_id)
+                    pending_markers.append(f"<!--TOOL:{name}|{_json.dumps(inp, default=str)}-->")
+
+            # Text content — prepend any queued tool markers
             if "data" in event and isinstance(event["data"], str):
-                yield event["data"]
-            else:
-                yield event
+                if pending_markers:
+                    prefix = "\n".join(pending_markers) + "\n"
+                    pending_markers.clear()
+                    yield prefix + event["data"]
+                else:
+                    yield event["data"]
+
+        # Flush any remaining markers (tool called at the very end with no text after)
+        if pending_markers:
+            yield "\n" + "\n".join(pending_markers)
 
 
 if __name__ == "__main__":

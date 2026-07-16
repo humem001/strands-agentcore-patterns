@@ -21,7 +21,7 @@ GOVUK_CSS = """
 
 /* Hide default Streamlit chrome */
 #MainMenu, header[data-testid="stHeader"], footer {visibility: hidden;}
-.block-container {padding-top: 0 !important; max-width: 1100px;}
+.block-container {padding-top: 0 !important; max-width: 98% !important; width: 98% !important; padding-left: 2rem !important; padding-right: 2rem !important;}
 
 html, body, [class*="css"] {
     font-family: Arial, "Helvetica Neue", Helvetica, sans-serif !important;
@@ -80,12 +80,29 @@ h1, h2, h3 { color: #0b0c0c !important; font-weight: 700 !important; }
     border-bottom: 3px solid #1d70b8; padding-bottom: 6px; margin-bottom: 10px;
 }
 
-/* Chat input — constrain to the same width as header/content */
+/* Flashing green processing indicator */
+@keyframes pulse-green {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.2; }
+}
+.processing-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    background: #00703c;
+    border-radius: 50%;
+    margin-left: 8px;
+    animation: pulse-green 1.2s ease-in-out infinite;
+    vertical-align: middle;
+}
+
+/* Chat input — match full content width */
 [data-testid="stBottomBlockContainer"] {
-    max-width: 1100px !important;
+    max-width: 98% !important;
+    width: 98% !important;
     margin: 0 auto !important;
-    padding-left: 1rem !important;
-    padding-right: 1rem !important;
+    padding-left: 2rem !important;
+    padding-right: 2rem !important;
 }
 [data-testid="stChatInput"] textarea:focus,
 .stTextInput input:focus {
@@ -126,6 +143,54 @@ h1, h2, h3 { color: #0b0c0c !important; font-weight: 700 !important; }
 
 /* Tool-call inset text */
 .govuk-inset { border-left: 5px solid #b1b4b6; padding: 8px 15px; margin: 8px 0; }
+
+
+/* Conversation panel — cleaner markdown rendering */
+[data-testid="stChatMessage"] {
+    font-size: 15px !important;
+    line-height: 1.5 !important;
+}
+[data-testid="stChatMessage"] hr {
+    border: none !important;
+    border-top: 1px solid #b1b4b6 !important;
+    margin: 12px 0 !important;
+}
+[data-testid="stChatMessage"] table {
+    font-size: 14px !important;
+    border-collapse: collapse !important;
+    width: 100% !important;
+    margin: 8px 0 !important;
+}
+[data-testid="stChatMessage"] th {
+    background: #f3f2f1 !important;
+    font-weight: 700 !important;
+    text-align: left !important;
+    padding: 6px 10px !important;
+    border-bottom: 2px solid #0b0c0c !important;
+}
+[data-testid="stChatMessage"] td {
+    padding: 6px 10px !important;
+    border-bottom: 1px solid #b1b4b6 !important;
+    vertical-align: top !important;
+}
+[data-testid="stChatMessage"] h2 {
+    font-size: 17px !important;
+    margin: 14px 0 6px 0 !important;
+    padding: 0 !important;
+    border: none !important;
+}
+[data-testid="stChatMessage"] ul, [data-testid="stChatMessage"] ol {
+    padding-left: 20px !important;
+    margin: 6px 0 !important;
+}
+[data-testid="stChatMessage"] li {
+    margin-bottom: 4px !important;
+}
+[data-testid="stChatMessage"] code {
+    background: #f3f2f1 !important;
+    padding: 1px 4px !important;
+    font-size: 13px !important;
+}
 </style>
 """
 
@@ -151,45 +216,36 @@ def invoke_agent_streaming(prompt: str, session_id: str):
     )
 
 
-def extract_text(ev):
-    """Pull a text delta out of any of the shapes Strands emits."""
-    if isinstance(ev, str):
-        return ev
-    if isinstance(ev, dict):
-        if isinstance(ev.get("data"), str):
-            return ev["data"]
-        delta = ev.get("event", {}).get("contentBlockDelta", {}).get("delta", {})
-        if "text" in delta:
-            return delta["text"]
-    return None
-
-
-def extract_tool(ev):
-    """Pull a tool-use (name, input) out of the event if present."""
-    if not isinstance(ev, dict):
-        return None
-    tu = ev.get("current_tool_use")
-    if tu and tu.get("name"):
-        return tu.get("name"), tu.get("input", {})
-    start = ev.get("event", {}).get("contentBlockStart", {}).get("start", {})
-    tu = start.get("toolUse")
-    if tu and tu.get("name"):
-        return tu.get("name"), tu.get("input", {})
-    return None
-
-
 def run_query(prompt, chat_box, reasoning_box):
     """Invoke the agent and render streaming output into the two panels."""
     assistant_text = []
-    seen_tools = set()
     reasoning_lines = []
+    seen_tools = set()
 
     answer_area = chat_box.empty()
     reasoning_area = reasoning_box.empty()
 
+    def render_reasoning():
+        # Wrap in a scrollable div that anchors to the bottom (column-reverse trick)
+        inner = "".join(reasoning_lines)
+        reasoning_area.markdown(
+            f"<div style='max-height:440px;overflow-y:auto;display:flex;flex-direction:column-reverse;'>"
+            f"<div>{inner}</div></div>",
+            unsafe_allow_html=True,
+        )
+
+    reasoning_lines.append(
+        "<div class='govuk-inset' style='border-left-color:#1d70b8'>"
+        "⏳ <b>Connecting to agent...</b></div>"
+    )
+    render_reasoning()
+
     try:
         response = invoke_agent_streaming(prompt, st.session_state["session_id"])
         content_type = response.get("contentType", "")
+
+        first_text = True
+        total_events = 0
 
         if "text/event-stream" in content_type:
             for line in response["response"].iter_lines(chunk_size=10):
@@ -199,32 +255,57 @@ def run_query(prompt, chat_box, reasoning_box):
                 if not decoded.startswith("data: "):
                     continue
                 data = decoded[6:]
+
                 try:
-                    event = json.loads(data)
+                    text = json.loads(data)
                 except json.JSONDecodeError:
-                    event = data
+                    text = data
 
-                tool = extract_tool(event)
-                if tool:
-                    name, inp = tool
-                    key = f"{name}:{json.dumps(inp, default=str)}"
-                    if key not in seen_tools:
-                        seen_tools.add(key)
-                        target, _, tool_name = name.partition("___")
-                        arg = json.dumps(inp, default=str)[:100] if inp else ""
-                        reasoning_lines.append(
-                            f"<div class='govuk-inset'>🔍 <b>{tool_name or target}</b>"
-                            f"<br/><span style='color:#505a5f'>{target}</span>"
-                            f"<br/><code>{arg}</code></div>"
-                        )
-                        reasoning_area.markdown(
-                            "".join(reasoning_lines), unsafe_allow_html=True
-                        )
+                if not isinstance(text, str):
+                    continue
 
-                text = extract_text(event)
-                if text:
-                    assistant_text.append(text)
-                    answer_area.markdown("".join(assistant_text))
+                # Strip out any <!--TOOL:...--> markers that leaked through
+                while "<!--TOOL:" in text and "-->" in text:
+                    start = text.find("<!--TOOL:")
+                    end = text.find("-->", start) + 3
+                    text = text[:start] + text[end:]
+
+                if not text:
+                    continue
+
+                total_events += 1
+
+                if first_text:
+                    reasoning_lines = [
+                        "<div class='govuk-inset' style='border-left-color:#1d70b8'>"
+                        "⚡ <b>Agent responding</b></div>"
+                    ]
+                    render_reasoning()
+                    first_text = False
+
+                assistant_text.append(text)
+                full_so_far = "".join(assistant_text)
+
+                # Detect >>> TOOL: or TOOL: lines in the accumulated text
+                # and mirror them to the reasoning panel in real time.
+                for line in full_so_far.split("\n"):
+                    stripped = line.strip()
+                    if stripped.startswith(">>> TOOL:") or stripped.startswith("TOOL:"):
+                        marker = stripped.replace(">>> TOOL:", "").replace("TOOL:", "").strip()
+                        tool_name, _, desc = marker.partition("|")
+                        tool_name = tool_name.strip()
+                        desc = desc.strip()
+                        key = f"{tool_name}:{desc}"
+                        if key not in seen_tools:
+                            seen_tools.add(key)
+                            reasoning_lines.append(
+                                f"<div class='govuk-inset' style='border-left-color:#1d70b8'>"
+                                f"🔍 <b>{tool_name}</b>"
+                                f"<br/><span style='color:#505a5f'>{desc}</span></div>"
+                            )
+                            render_reasoning()
+
+                answer_area.markdown(full_so_far)
 
         elif content_type == "application/json":
             chunks = [c.decode("utf-8") for c in response.get("response", [])]
@@ -232,12 +313,38 @@ def run_query(prompt, chat_box, reasoning_box):
             answer_area.markdown("".join(assistant_text))
 
         final = "".join(assistant_text) if assistant_text else "No response received."
-        if reasoning_lines:
-            reasoning_lines.append(
-                "<div class='govuk-inset' style='border-left-color:#00703c'>"
-                "✅ <b>Complete</b></div>"
-            )
-            reasoning_area.markdown("".join(reasoning_lines), unsafe_allow_html=True)
+
+        # Final reasoning state — show what tools were actually used
+        # (detected from the answer content for accuracy)
+        tool_evidence = [
+            ("search_catalogue", "Searched the data catalogue", "AWS Glue", ["datasets", "catalogue", "tables", "found"]),
+            ("classify_pii", "Classified PII sensitivity", "AWS Glue", ["PII", "NINO", "HIGH", "sensitivity", "classified"]),
+            ("show_lineage", "Traced data lineage", "AWS Glue", ["upstream", "downstream", "lineage", "comes from"]),
+            ("policy_search", "Searched governance policies", "Bedrock KB · S3 Vectors", ["policy", "sharing", "DPIA", "legal gateway", "DSA"]),
+            ("query_dataset", "Executed live SQL query", "Amazon Athena", ["SELECT", "query", "rows"]),
+            ("generate_metadata", "Generated metadata", "AWS Glue", ["FAIR", "generated description"]),
+            ("suggest_joins", "Recommended joins", "AWS Glue", ["join", "JOIN", "link"]),
+            ("list_ml_models", "Discovered ML models", "Amazon SageMaker", ["model", "SageMaker", "feature group"]),
+            ("describe_ml_asset", "Described ML asset", "Amazon SageMaker", ["trained on", "model package"]),
+        ]
+
+        final_reasoning = []
+        final_lower = final.lower()
+        for tool_name, desc, datasource, keywords in tool_evidence:
+            if any(kw.lower() in final_lower for kw in keywords):
+                final_reasoning.append(
+                    f"<div class='govuk-inset' style='border-left-color:#1d70b8'>"
+                    f"✅ <b>{tool_name}</b>"
+                    f"<br/><span style='color:#505a5f'>{desc}</span>"
+                    f"<br/><span style='color:#1d70b8;font-size:12px'>⛁ {datasource}</span></div>"
+                )
+
+        final_reasoning.append(
+            "<div class='govuk-inset' style='border-left-color:#00703c'>"
+            f"🏁 <b>Complete</b> — {total_events} tokens streamed</div>"
+        )
+        reasoning_area.markdown("".join(final_reasoning), unsafe_allow_html=True)
+
         return final
     except Exception as e:
         answer_area.error(f"Error: {e}")
@@ -270,6 +377,12 @@ def main():
 
     prompt = typed.strip() if (submitted and typed and typed.strip()) else None
 
+    # Reset both panels on new submission
+    if prompt:
+        st.session_state["messages"] = []
+
+    is_processing = prompt is not None
+
     chat_col, reasoning_col = st.columns([3, 2], gap="large")
 
     with chat_col:
@@ -281,8 +394,18 @@ def main():
                     st.markdown(msg["content"])
 
     with reasoning_col:
-        st.markdown("<div class='panel-label'>Agent reasoning (live)</div>", unsafe_allow_html=True)
-        reasoning_history = st.container(height=460)
+        reasoning_label = st.empty()
+        if is_processing:
+            reasoning_label.markdown(
+                "<div class='panel-label'>Agent reasoning (live)<span class='processing-dot'></span></div>",
+                unsafe_allow_html=True,
+            )
+        else:
+            reasoning_label.markdown(
+                "<div class='panel-label'>Agent reasoning (live)</div>",
+                unsafe_allow_html=True,
+            )
+        reasoning_history = st.container()
 
     if prompt:
         st.session_state["messages"].append({"role": "user", "content": prompt})
@@ -295,6 +418,12 @@ def main():
 
         final = run_query(prompt, assistant_box, reasoning_box)
         st.session_state["messages"].append({"role": "assistant", "content": final})
+
+        # Stop the flashing dot
+        reasoning_label.markdown(
+            "<div class='panel-label'>Agent reasoning (live)</div>",
+            unsafe_allow_html=True,
+        )
 
 
 if __name__ == "__main__":

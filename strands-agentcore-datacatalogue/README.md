@@ -53,40 +53,8 @@ approach generalises to problems that have no managed product at all.
 
 ## Architecture
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│  Streamlit UI (local)  —  GOV.UK styled chat + live reasoning panel  │
-└──────────────────────────────┬──────────────────────────────────────┘
-              InvokeAgentRuntime (SSE stream, SigV4 / IAM)
-┌──────────────────────────────▼──────────────────────────────────────┐
-│  Bedrock AgentCore Runtime  (eu-west-2, CodeZip / HTTP+SSE)          │
-│  ┌────────────────────────────────────────────────────────────────┐ │
-│  │  Strands Agent                                                  │ │
-│  │   • fetches Cognito M2M token (client-credentials)              │ │
-│  │   • connects to Gateway over MCP (streamable-http)              │ │
-│  │   • discovers tools via tools/list                              │ │
-│  │   • reasons with Bedrock Claude Sonnet                          │ │
-│  │   • stream_async → each reasoning/tool step streams to the UI   │ │
-│  └────────────────────────────────────────────────────────────────┘ │
-└──────────────────────────────┬──────────────────────────────────────┘
-              MCP tools/list + tools/call (Cognito JWT)
-┌──────────────────────────────▼──────────────────────────────────────┐
-│  Bedrock AgentCore Gateway  (CUSTOM_JWT authorizer → Cognito)        │
-│  Outbound to Lambdas: GATEWAY_IAM_ROLE (SigV4 lambda:InvokeFunction) │
-│  ┌────────────┬────────────┬────────────┬────────────┬───────────┐  │
-│  │glue-        │athena-     │sagemaker-  │pii-        │governance-│  │
-│  │catalogue    │query       │ml          │classifier  │kb         │  │
-│  │(5 tools)    │(1 tool)    │(2 tools)   │(1 tool)    │(1 tool)   │  │
-│  └─────┬───────┴─────┬──────┴─────┬──────┴─────┬──────┴─────┬─────┘  │
-└────────┼─────────────┼────────────┼────────────┼────────────┼────────┘
-         ▼             ▼            ▼            ▼            ▼
-    ┌────────┐   ┌──────────┐  ┌──────────┐  ┌────────┐  ┌──────────┐
-    │AWS Glue│   │ Athena   │  │SageMaker │  │AWS Glue│  │Bedrock KB│
-    │Data Cat│   │+ S3      │  │Registry +│  │(schema)│  │(retrieve)│
-    │        │   │(Parquet) │  │Feature   │  │        │  │S3 Vectors│
-    └────────┘   └──────────┘  │Store     │  └────────┘  └──────────┘
-                                └──────────┘
-```
+![Architecture Diagram](architecture/architecture.drawio.png)
+
 
 ### Key design decisions
 
