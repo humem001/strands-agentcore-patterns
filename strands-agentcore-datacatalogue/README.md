@@ -96,6 +96,9 @@ region where those services are available.
   write-back is disabled (no `glue:UpdateTable` on the role unless a deploy flag
   enables it). The orchestrator also applies `LIMIT 100` and never emits DML/DDL,
   but IAM is the real guardrail.
+- **Bedrock Guardrails** applied at the model invocation layer — blocks off-topic
+  requests, prompt injection attempts, and harmful content before they reach the
+  LLM. PII redaction configured as a safety net on outputs.
 
 ### Authentication (two boundaries)
 
@@ -114,6 +117,7 @@ region where those services are available.
 | Bedrock AgentCore Runtime | Hosts the Strands agent (CodeZip, HTTP/SSE streaming) |
 | Bedrock AgentCore Gateway | Aggregates 5 Lambda targets into one MCP tool list |
 | Amazon Bedrock (Claude Sonnet) | Agent reasoning, NL understanding, SQL/metadata generation |
+| Amazon Bedrock Guardrails | Content safety — topic denial, prompt injection blocking, PII redaction |
 | Amazon Bedrock (Titan Text Embeddings V2) | Embeddings for the Knowledge Base |
 | Bedrock Knowledge Base + S3 Vectors | RAG over governance documents (`retrieve` only) |
 | AWS Lambda (×5) | Data-accessor tool targets behind the Gateway |
