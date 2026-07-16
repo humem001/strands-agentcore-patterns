@@ -24,9 +24,14 @@ M2M_CLIENT_ID = os.environ["COGNITO_M2M_CLIENT_ID"]
 M2M_CLIENT_SECRET = os.environ["COGNITO_M2M_CLIENT_SECRET"]
 M2M_SCOPE = os.environ.get("COGNITO_M2M_SCOPE", "dwp-demo-api/gateway.tools")
 
+GUARDRAIL_ID = os.environ.get("GUARDRAIL_ID", "hf6qyzh9j13b")
+GUARDRAIL_VERSION = os.environ.get("GUARDRAIL_VERSION", "DRAFT")
+
 model = BedrockModel(
     model_id="anthropic.claude-sonnet-4-6",
     region_name="eu-west-2",
+    guardrail_id=GUARDRAIL_ID,
+    guardrail_version=GUARDRAIL_VERSION,
 )
 
 
