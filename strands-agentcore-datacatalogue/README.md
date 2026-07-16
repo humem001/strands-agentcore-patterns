@@ -29,6 +29,13 @@ agent like this as the conversational interface layer on top).
 The demo demonstrates an **agentic pattern** (Strands + AgentCore + Gateway) that
 can sit on top of any set of services and orchestrate them transparently.
 
+For customers who **cannot or choose not to use DataZone / SageMaker Catalog** —
+whether due to regional availability, compliance constraints, existing
+infrastructure, or the need for a fully customisable approach — this pattern
+gives them the same intelligent data discovery and governance capabilities, built
+entirely from services they already have (Glue, Athena, S3, Bedrock), in any
+region where those services are available.
+
 ### What it demonstrates
 
 - **Natural-language orchestration across your data estate** — Athena, S3, Glue,
