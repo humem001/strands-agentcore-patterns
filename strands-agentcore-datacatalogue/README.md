@@ -20,19 +20,36 @@ Insurance numbers or case references.
 ## Why build this?
 
 Amazon **DataZone / SageMaker Catalog** is the right answer for a *production*
-data catalogue. This project is **not** trying to replace it. The point is to
-demonstrate the **agentic pattern**:
+data catalogue. This project is **not** trying to replace it.
 
-- **One natural-language agent** that autonomously chains discovery → PII →
-  lineage → live query → policy Q&A across multiple AWS services.
-- **Visible reasoning** — a live panel shows each tool call and result as it
-  happens, so users see *real* tool orchestration rather than a black box.
+**The one-line positioning:** DataZone gives you a *catalogue portal*. This gives
+you a **transparent AI agent that orchestrates across the catalogue and beyond**.
+They solve different problems — and in a production world you'd likely use both
+(DataZone as the governed catalogue, an agent like this as the conversational
+interface layer on top).
+
+**The demo's value isn't "we built a catalogue"** — it's "we built the **agentic
+pattern** (Strands + AgentCore + Gateway) that can sit on top of *any* set of
+services and orchestrate them transparently." The catalogue is just the relatable
+use case to show it.
+
+### What it demonstrates
+
+- **Natural-language orchestration across your data estate** — Athena, S3, Glue,
+  SageMaker, Knowledge Bases, and any other source you wire in: Redshift, Lake
+  Formation, CloudTrail, or third-party tools like Snowflake, SharePoint,
+  ServiceNow, Jira.
+- **It doesn't just find things — it reasons across them.** One question can
+  search the catalogue, classify sensitivity, trace lineage, check governance
+  policy, and query live data, all in a single turn with visible reasoning.
+- **Adding a new data source is one Lambda + one Gateway target registration** —
+  the agent discovers and uses it automatically in the next invocation. No
+  retraining, no redeployment of the agent itself.
+- **Visible reasoning** — a live panel shows each tool call and the AWS service
+  it accessed, so users see *real* orchestration rather than a black box.
 - **Bespoke governance Q&A** grounded in *your own* policy documents, with
   citations (Bedrock Knowledge Base territory, not a catalog feature).
 - **In-region** (eu-west-2 / London) for data residency, using Bedrock directly.
-
-The catalogue is a relatable vehicle; the same AgentCore + Gateway + Strands
-approach generalises to problems that have no managed product at all.
 
 ### What the agent can do
 
