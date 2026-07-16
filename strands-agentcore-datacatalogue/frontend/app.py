@@ -329,15 +329,19 @@ def run_query(prompt, chat_box, reasoning_box):
         ]
 
         final_reasoning = []
-        final_lower = final.lower()
-        for tool_name, desc, datasource, keywords in tool_evidence:
-            if any(kw.lower() in final_lower for kw in keywords):
-                final_reasoning.append(
-                    f"<div class='govuk-inset' style='border-left-color:#1d70b8'>"
-                    f"✅ <b>{tool_name}</b>"
-                    f"<br/><span style='color:#505a5f'>{desc}</span>"
-                    f"<br/><span style='color:#1d70b8;font-size:12px'>⛁ {datasource}</span></div>"
-                )
+
+        # Only show tool evidence if the response was substantial
+        # (short responses = guardrail blocks or simple refusals, no tools ran)
+        if total_events > 100:
+            final_lower = final.lower()
+            for tool_name, desc, datasource, keywords in tool_evidence:
+                if any(kw.lower() in final_lower for kw in keywords):
+                    final_reasoning.append(
+                        f"<div class='govuk-inset' style='border-left-color:#1d70b8'>"
+                        f"✅ <b>{tool_name}</b>"
+                        f"<br/><span style='color:#505a5f'>{desc}</span>"
+                        f"<br/><span style='color:#1d70b8;font-size:12px'>⛁ {datasource}</span></div>"
+                    )
 
         final_reasoning.append(
             "<div class='govuk-inset' style='border-left-color:#00703c'>"
