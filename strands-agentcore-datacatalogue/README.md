@@ -58,16 +58,16 @@ region where those services are available.
 
 | Capability | Tool | Example question |
 |---|---|---|
-| Dataset discovery | `search_catalogue` | "What datasets are available for the fraud team?" |
+| Dataset discovery | `search_catalogue` | "I'm building a dashboard for the Minister on fraud — what should I include?" |
 | Dataset detail | `get_dataset_detail` | "What columns are in the CMS payment history table?" |
 | PII classification | `classify_pii` | "Which datasets contain National Insurance numbers?" |
-| Data lineage | `show_lineage` | "Where does the compliance prediction score come from?" |
-| Metadata generation | `generate_metadata` | "Generate a description for the chatbot interactions table" |
+| Data lineage | `show_lineage` | "Who owns the data behind the service performance KPIs?" |
+| Metadata generation | `generate_metadata` | "The jcs_chatbot_interactions table has no description — generate FAIR-compliant metadata so we can publish it in the catalogue" |
 | Join recommendations | `suggest_joins` | "How do I link fraud referrals to payment history?" |
-| Live SQL query | `query_dataset` | "Show the top 10 highest-risk cases" |
-| Governance Q&A | `policy_search` | "Can I share Universal Credit data with HMRC?" |
-| ML asset discovery | `list_ml_models` | "What ML models do we have for fraud detection?" |
-| ML asset detail | `describe_ml_asset` | "What was the compliance predictor trained on?" |
+| Live SQL query | `query_dataset` | "Show me Universal Credit payments over £100" |
+| Governance Q&A | `policy_search` | "What happens if we discover a data breach in a HIGH PII dataset — what's the process?" |
+| ML asset discovery | `list_ml_models` | "We're being audited on our use of AI in decision-making — what models do we have, what data were they trained on, and can we trace it back to source?" |
+| ML asset detail | `describe_ml_asset` | "What accuracy does the fraud detection model achieve, and should we trust it for referral decisions?" |
 
 ---
 
