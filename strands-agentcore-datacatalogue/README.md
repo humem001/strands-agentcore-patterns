@@ -54,6 +54,31 @@ region where those services are available.
   citations (Bedrock Knowledge Base territory, not a catalog feature).
 - **In-region** (eu-west-2 / London) for data residency, using Bedrock directly.
 
+### How this relates to AWS Context
+
+AWS announced **AWS Context** (June 2026) — a managed service that automatically
+maps data relationships into a knowledge graph and provides agentic search so AI
+agents can access governed context at runtime. It also introduced **Glue Data
+Catalog Business Context** (enriched metadata + skill assets) and **S3
+Annotations** (queryable business context attached to S3 objects, discoverable
+via an S3 Tables MCP server).
+
+This demo and AWS Context share the same thesis: *agents are only as intelligent
+as the context they can reason over*. The difference is scope:
+
+| | This demo | AWS Context |
+|---|---|---|
+| Scale | 10 tables, manual metadata | Enterprise-wide, auto-inferred knowledge graph |
+| Lineage | JSON in Glue table properties | Auto-mapped, self-improving from agent usage |
+| Governance | Static policy docs in a KB | Identity-aware, IAM + Lake Formation at query time |
+| Availability | Any region, today, from existing services | Coming soon (announced June 2026) |
+
+**They're complementary, not competing.** For customers who want this capability
+today — or in regions where AWS Context isn't yet available, or who need full
+customisation — this pattern shows how to build it from Glue + Athena + Bedrock
+KB + AgentCore Gateway. When AWS Context becomes generally available, it plugs in
+as another Gateway target. The agent pattern doesn't change.
+
 ### What the agent can do
 
 | Capability | Tool | Example question |
