@@ -383,4 +383,10 @@ agentcore destroy
 - **`generate_metadata` write-back** is disabled by default and IAM-gated. Enable
   it only via the deploy flag if you specifically want to demonstrate catalogue
   mutation.
-```
+
+---
+
+## License
+
+Copyright 2026 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+SPDX-License-Identifier: MIT-0
