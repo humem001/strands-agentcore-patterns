@@ -81,18 +81,18 @@ as another Gateway target. The agent pattern doesn't change.
 
 ### What the agent can do
 
-| Capability | Tool | Example question |
-|---|---|---|
-| Dataset discovery | `search_catalogue` | "I'm building a dashboard for the Minister on fraud — what should I include?" |
-| Dataset detail | `get_dataset_detail` | "What columns are in the CMS payment history table?" |
-| PII classification | `classify_pii` | "Which datasets contain National Insurance numbers?" |
-| Data lineage | `show_lineage` | "Who owns the data behind the service performance KPIs?" |
-| Metadata generation | `generate_metadata` | "The jcs_chatbot_interactions table has no description — generate FAIR-compliant metadata so we can publish it in the catalogue" |
-| Join recommendations | `suggest_joins` | "How do I link fraud referrals to payment history?" |
-| Live SQL query | `query_dataset` | "Show me Universal Credit payments over £100" |
-| Governance Q&A | `policy_search` | "What happens if we discover a data breach in a HIGH PII dataset — what's the process?" |
-| ML asset discovery | `list_ml_models` | "We're being audited on our use of AI in decision-making — what models do we have, what data were they trained on, and can we trace it back to source?" |
-| ML asset detail | `describe_ml_asset` | "What accuracy does the fraud detection model achieve, and should we trust it for referral decisions?" |
+| Capability | Tool | How it works | Example question |
+|---|---|---|---|
+| Dataset discovery | `search_catalogue` | Fetches all tables from Glue Data Catalog; the agent reasons over descriptions to find relevant datasets | "I'm building a dashboard for the Minister on fraud — what should I include?" |
+| Dataset detail | `get_dataset_detail` | Calls `glue.get_table()` to return full column schema, types, descriptions, owner, steward, and S3 location | "What columns are in the CMS payment history table?" |
+| PII classification | `classify_pii` | Returns column schema from Glue; the agent then classifies each column (NONE/LOW/MEDIUM/HIGH) using its own reasoning | "Which datasets contain National Insurance numbers?" |
+| Data lineage | `show_lineage` | Reads lineage metadata (upstream, downstream, transformation) stored in Glue table parameters | "Who owns the data behind the service performance KPIs?" |
+| Metadata generation | `generate_metadata` | Returns table schema from Glue; the agent generates FAIR-compliant descriptions (write-back disabled by default) | "The jcs_chatbot_interactions table has no description — generate FAIR-compliant metadata so we can publish it in the catalogue" |
+| Join recommendations | `suggest_joins` | Fetches all tables with their column names/types from Glue; the agent identifies common keys and recommends joins | "How do I link fraud referrals to payment history?" |
+| Live SQL query | `query_dataset` | Agent retrieves table schema via Glue, generates a SELECT query, then executes it on Athena (read-only, LIMIT 100) | "Show me Universal Credit payments over £100" |
+| Governance Q&A | `policy_search` | Calls Bedrock Knowledge Base `retrieve` to get relevant policy document chunks; the agent synthesises the answer with citations | "What happens if we discover a data breach in a HIGH PII dataset — what's the process?" |
+| ML asset discovery | `list_ml_models` | Lists SageMaker Model Registry groups and offline Feature Store groups | "We're being audited on our use of AI in decision-making — what models do we have, what data were they trained on, and can we trace it back to source?" |
+| ML asset detail | `describe_ml_asset` | Calls `describe_model_package` or `describe_feature_group` on SageMaker to return metrics, status, and data sources | "What accuracy does the fraud detection model achieve, and should we trust it for referral decisions?" |
 
 ---
 
