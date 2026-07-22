@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Create AgentCore Gateway (CUSTOM_JWT -> Cognito) + 5 lambda targets via boto3."""
+"""Create AgentCore Gateway (CUSTOM_JWT -> Cognito) + 6 lambda targets via boto3."""
 
 import argparse
 import json
@@ -15,6 +15,7 @@ TARGETS = [
     ("sagemaker-ml", "SagemakerMlFnArn", "tools/sagemaker_ml_tools.json"),
     ("pii-classifier", "PiiClassifierFnArn", "tools/pii_classifier_tools.json"),
     ("governance-kb", "GovernanceKbFnArn", "tools/governance_kb_tools.json"),
+    ("cloudtrail-audit", "CloudTrailAuditFnArn", "tools/cloudtrail_audit_tools.json"),
 ]
 
 

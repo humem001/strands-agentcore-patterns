@@ -1,0 +1,24 @@
+[
+  {
+    "name": "audit_access",
+    "description": "Query who accessed a dataset (via S3 or Athena) in the last N days. Returns principals, timestamps, source IPs, and event types. Use after search_catalogue or get_dataset_detail to audit access to a specific dataset.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "s3_prefix": {
+          "type": "string",
+          "description": "S3 URI or prefix of the dataset (e.g. s3://bucket/cms_payment_history/)"
+        },
+        "table_name": {
+          "type": "string",
+          "description": "Glue table name — used to find Athena queries against this table"
+        },
+        "days": {
+          "type": "integer",
+          "description": "Number of days to look back (1-90, default 30)"
+        }
+      },
+      "required": ["s3_prefix", "table_name"]
+    }
+  }
+]

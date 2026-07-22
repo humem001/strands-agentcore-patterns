@@ -1,4 +1,4 @@
-"""CDK stack: 5 Lambda target functions with least-privilege IAM roles."""
+"""CDK stack: 6 Lambda target functions with least-privilege IAM roles."""
 
 import aws_cdk as cdk
 from aws_cdk import (
@@ -10,7 +10,7 @@ from constructs import Construct
 
 
 class LambdaTargetsStack(cdk.Stack):
-    """Five Lambda targets for AgentCore Gateway."""
+    """Six Lambda targets for AgentCore Gateway."""
 
     def __init__(
         self,
@@ -183,9 +183,34 @@ class LambdaTargetsStack(cdk.Stack):
             environment={"KNOWLEDGE_BASE_ID": kb_id},
         )
 
+        # --- cloudtrail-audit target ---
+        cloudtrail_role = iam.Role(
+            self, "CloudTrailAuditRole",
+            assumed_by=iam.ServicePrincipal("lambda.amazonaws.com"),
+            managed_policies=[
+                iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AWSLambdaBasicExecutionRole"),
+            ],
+        )
+        cloudtrail_role.add_to_policy(iam.PolicyStatement(
+            actions=["cloudtrail:LookupEvents"],
+            resources=["*"],
+        ))
+
+        self.cloudtrail_audit_fn = _lambda.Function(
+            self, "CloudTrailAuditFn",
+            function_name="dwp-demo-cloudtrail-target",
+            runtime=_lambda.Runtime.PYTHON_3_11,
+            handler="handler.handler",
+            code=_lambda.Code.from_asset("../targets/cloudtrail_audit"),
+            role=cloudtrail_role,
+            timeout=cdk.Duration.seconds(60),
+            memory_size=256,
+        )
+
         # --- Outputs ---
         cdk.CfnOutput(self, "GlueCatalogueFnArn", value=self.glue_catalogue_fn.function_arn)
         cdk.CfnOutput(self, "AthenaQueryFnArn", value=self.athena_query_fn.function_arn)
         cdk.CfnOutput(self, "SagemakerMlFnArn", value=self.sagemaker_ml_fn.function_arn)
         cdk.CfnOutput(self, "PiiClassifierFnArn", value=self.pii_classifier_fn.function_arn)
         cdk.CfnOutput(self, "GovernanceKbFnArn", value=self.governance_kb_fn.function_arn)
+        cdk.CfnOutput(self, "CloudTrailAuditFnArn", value=self.cloudtrail_audit_fn.function_arn)

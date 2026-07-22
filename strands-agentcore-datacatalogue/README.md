@@ -11,7 +11,7 @@ Insurance numbers or case references.
 
 > This is one pattern in the `strands-agentcore-patterns` collection. It
 > demonstrates a **single Strands agent on Amazon Bedrock AgentCore Runtime**
-> orchestrating **five Lambda tool targets (10 tools) through one AgentCore
+> orchestrating **six Lambda tool targets (11 tools) through one AgentCore
 > Gateway**, plus a Bedrock Knowledge Base on S3 Vectors — the "many tools, one
 > transparent agent" pattern.
 
@@ -93,6 +93,7 @@ as another Gateway target. The agent pattern doesn't change.
 | Governance Q&A | `policy_search` | Calls Bedrock Knowledge Base `retrieve` to get relevant policy document chunks; the agent synthesises the answer with citations | "What happens if we discover a data breach in a HIGH PII dataset — what's the process?" |
 | ML asset discovery | `list_ml_models` | Lists SageMaker Model Registry groups and offline Feature Store groups | "We're being audited on our use of AI in decision-making — what models do we have, what data were they trained on, and can we trace it back to source?" |
 | ML asset detail | `describe_ml_asset` | Calls `describe_model_package` or `describe_feature_group` on SageMaker to return metrics, status, and data sources | "What accuracy does the fraud detection model achieve, and should we trust it for referral decisions?" |
+| Data access audit | `audit_access` | Queries CloudTrail LookupEvents for Athena queries and Glue metadata access referencing a table over the last N days; returns principals, timestamps, and IPs | "Who accessed the fraud payment data in the last 30 days — and should they have?" |
 
 ---
 
@@ -140,16 +141,17 @@ as another Gateway target. The agent pattern doesn't change.
 | Service | Role |
 |---|---|
 | Bedrock AgentCore Runtime | Hosts the Strands agent (CodeZip, HTTP/SSE streaming) |
-| Bedrock AgentCore Gateway | Aggregates 5 Lambda targets into one MCP tool list |
+| Bedrock AgentCore Gateway | Aggregates 6 Lambda targets into one MCP tool list |
 | Amazon Bedrock (Claude Sonnet) | Agent reasoning, NL understanding, SQL/metadata generation |
 | Amazon Bedrock Guardrails | Content safety — topic denial, prompt injection blocking, PII redaction |
 | Amazon Bedrock (Titan Text Embeddings V2) | Embeddings for the Knowledge Base |
 | Bedrock Knowledge Base + S3 Vectors | RAG over governance documents (`retrieve` only) |
-| AWS Lambda (×5) | Data-accessor tool targets behind the Gateway |
+| AWS Lambda (×6) | Data-accessor tool targets behind the Gateway |
 | AWS Glue Data Catalog | Metadata store (tables created directly, no Crawler) |
 | Amazon Athena | Serverless SQL over S3 Parquet (read-only, dedicated workgroup) |
 | Amazon SageMaker | Model Registry + offline Feature Store (metadata only) |
 | Amazon Cognito | M2M auth (agent → Gateway) |
+| AWS CloudTrail | Data access auditing via LookupEvents API (Athena queries + Glue metadata access, 90-day history) |
 | Amazon S3 | Parquet datasets, Athena results, KB source docs, S3 Vectors |
 
 ---
@@ -162,19 +164,20 @@ strands-agentcore-datacatalogue/
 │   ├── main.py               #   entrypoint: token → Gateway (MCP) → stream_async
 │   ├── system_prompt.txt     #   agent instructions (PII rules, SQL safety, citations)
 │   └── pyproject.toml
-├── targets/                  # 5 Lambda tool targets (10 tools total)
+├── targets/                  # 6 Lambda tool targets (11 tools total)
 │   ├── glue_catalogue/       #   search_catalogue, get_dataset_detail, show_lineage,
 │   │                         #   generate_metadata, suggest_joins
 │   ├── athena_query/         #   query_dataset (read-only IAM + dedicated workgroup)
 │   ├── sagemaker_ml/         #   list_ml_models, describe_ml_asset
 │   ├── pii_classifier/       #   classify_pii (returns schema only; agent reasons)
-│   └── governance_kb/        #   policy_search (Bedrock KB retrieve only)
+│   ├── governance_kb/        #   policy_search (Bedrock KB retrieve only)
+│   └── cloudtrail_audit/     #   audit_access (CloudTrail Lake query)
 ├── tools/                    # Inline MCP tool schemas per target (Gateway registration)
 ├── infra/                    # AWS CDK (Python) — data-plane stacks
 │   ├── app.py
 │   └── stacks/               #   data platform, Cognito, Knowledge Base, ML, Lambdas
 ├── scripts/
-│   ├── deploy_gateway.py     #   creates Gateway + 5 targets (boto3 control plane)
+│   ├── deploy_gateway.py     #   creates Gateway + 6 targets (boto3 control plane)
 │   ├── create_glue_tables.py #   Glue tables from manifest
 │   ├── register_ml_assets.py #   SageMaker model packages + feature group
 │   ├── sync_knowledge_base.py#   trigger + wait for KB ingestion
@@ -215,9 +218,9 @@ strands-agentcore-datacatalogue/
 The deploy is split by responsibility:
 
 - **AWS CDK** provisions the data plane (S3, Glue, Athena, Cognito, Knowledge
-  Base, SageMaker, the 5 Lambda targets and their IAM roles).
+  Base, SageMaker, the 6 Lambda targets and their IAM roles).
 - **The AgentCore CLI + a boto3 script** provision the AgentCore layer (Gateway,
-  its 5 targets, and the Runtime agent).
+  its 6 targets, and the Runtime agent).
 
 > **Region is eu-west-2 throughout.** A streaming spike (`spike/`) validates that
 > AgentCore Runtime delivers SSE events incrementally *before* the full build —
@@ -243,7 +246,7 @@ cd ..
 ```
 
 This creates the S3 buckets, Glue database + Athena workgroup, Cognito user pool
-+ M2M app client, the Bedrock Knowledge Base (S3 Vectors) and the 5 Lambda tool
++ M2M app client, the Bedrock Knowledge Base (S3 Vectors) and the 6 Lambda tool
 functions with least-privilege roles.
 
 > **S3 Vectors note:** the vector bucket and index for the Knowledge Base are
@@ -271,7 +274,7 @@ python scripts/sync_knowledge_base.py --kb-id <KB_ID> --datasource-id <DS_ID>
 (`setup.sh` orchestrates Steps 2–3 end-to-end; the manual breakdown is shown for
 clarity. Bucket names and IDs are in `cdk-outputs.json`.)
 
-### Step 4 — Deploy the AgentCore Gateway + 5 targets
+### Step 4 — Deploy the AgentCore Gateway + 6 targets
 
 ```bash
 python scripts/deploy_gateway.py

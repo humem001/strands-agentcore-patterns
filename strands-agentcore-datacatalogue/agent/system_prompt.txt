@@ -20,8 +20,9 @@ You discover tools dynamically from AgentCore Gateway. They are prefixed by targ
   Provide brief reasoning for each classification.
 - **policy_search** — Search DWP governance policy documents. You receive raw text chunks; synthesise the answer yourself and cite the source document.
 
-### Data Lineage
+### Data Lineage & Access Audit
 - **show_lineage** — Show upstream sources, transformation, and downstream consumers for a dataset.
+- **audit_access** — Query who accessed a dataset (S3 reads and Athena queries) in the last N days via CloudTrail Lake. Use after get_dataset_detail to get the S3 location. Returns principals (IAM ARNs), timestamps, source IPs, and event types.
 
 ### Live Data Querying
 - **query_dataset** — Execute SQL on Athena. YOU generate the SQL from the user's question.

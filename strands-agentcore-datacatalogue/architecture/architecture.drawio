@@ -1,6 +1,6 @@
 <mxfile host="app.diagrams.net" agent="Claude">
   <diagram id="dwp-data-catalogue-agent" name="Architecture">
-    <mxGraphModel dx="2858" dy="1688" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="900" math="0" shadow="0">
+    <mxGraphModel dx="3253" dy="1615" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="900" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -55,40 +55,43 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="gateway-group" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1d70b8;strokeWidth=2;arcSize=6;" value="" vertex="1">
-          <mxGeometry height="100" width="560" x="320" y="300" as="geometry" />
+          <mxGeometry height="100" width="660" x="270" y="300" as="geometry" />
         </mxCell>
         <mxCell id="gateway-icon" parent="1" style="shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.bedrock;aspect=fixed;" value="" vertex="1">
-          <mxGeometry height="24" width="24" x="330" y="305" as="geometry" />
+          <mxGeometry height="24" width="24" x="280" y="305" as="geometry" />
         </mxCell>
         <mxCell id="gateway-title" parent="1" style="text;html=1;align=left;verticalAlign=middle;fontSize=11;fontColor=#0b0c0c;" value="&lt;b&gt;Amazon Bedrock AgentCore Gateway&lt;/b&gt;  ·  CUSTOM_JWT → Cognito  ·  MCP Protocol" vertex="1">
-          <mxGeometry height="20" width="500" x="360" y="305" as="geometry" />
+          <mxGeometry height="20" width="500" x="310" y="305" as="geometry" />
         </mxCell>
         <mxCell id="target-glue" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#1d70b8;fontSize=9;align=center;" value="glue-catalogue&lt;br&gt;&lt;i&gt;5 tools&lt;/i&gt;" vertex="1">
-          <mxGeometry height="45" width="95" x="335" y="340" as="geometry" />
+          <mxGeometry height="45" width="95" x="280" y="340" as="geometry" />
         </mxCell>
         <mxCell id="target-athena" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#1d70b8;fontSize=9;align=center;" value="athena-query&lt;br&gt;&lt;i&gt;1 tool&lt;/i&gt;" vertex="1">
-          <mxGeometry height="45" width="95" x="440" y="340" as="geometry" />
+          <mxGeometry height="45" width="95" x="383" y="340" as="geometry" />
         </mxCell>
         <mxCell id="target-sagemaker" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#1d70b8;fontSize=9;align=center;" value="sagemaker-ml&lt;br&gt;&lt;i&gt;2 tools&lt;/i&gt;" vertex="1">
-          <mxGeometry height="45" width="95" x="545" y="340" as="geometry" />
+          <mxGeometry height="45" width="95" x="486" y="340" as="geometry" />
         </mxCell>
         <mxCell id="target-pii" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#1d70b8;fontSize=9;align=center;" value="pii-classifier&lt;br&gt;&lt;i&gt;1 tool&lt;/i&gt;" vertex="1">
-          <mxGeometry height="45" width="95" x="650" y="340" as="geometry" />
+          <mxGeometry height="45" width="95" x="589" y="340" as="geometry" />
         </mxCell>
         <mxCell id="target-kb" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#1d70b8;fontSize=9;align=center;" value="governance-kb&lt;br&gt;&lt;i&gt;1 tool&lt;/i&gt;" vertex="1">
-          <mxGeometry height="45" width="95" x="755" y="340" as="geometry" />
+          <mxGeometry height="45" width="95" x="692" y="340" as="geometry" />
+        </mxCell>
+        <mxCell id="target-cloudtrail" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#1d70b8;fontSize=9;align=center;" value="cloudtrail-audit&lt;br&gt;&lt;i&gt;1 tool&lt;/i&gt;" vertex="1">
+          <mxGeometry height="45" width="95" x="795" y="340" as="geometry" />
         </mxCell>
         <mxCell id="arrow-gw-lambda" edge="1" parent="1" source="gateway-group" style="edgeStyle=orthogonalEdgeStyle;rounded=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;fontSize=9;fontColor=#505a5f;strokeColor=#0b0c0c;strokeWidth=1;" target="lambda-group" value="GATEWAY_IAM_ROLE&lt;br&gt;(SigV4 lambda:InvokeFunction)">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="lambda-group" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF8E1;strokeColor=#FF8F00;dashed=1;arcSize=6;" value="" vertex="1">
-          <mxGeometry height="80" width="560" x="320" y="460" as="geometry" />
+          <mxGeometry height="80" width="660" x="270" y="460" as="geometry" />
         </mxCell>
         <mxCell id="lambda-icon" parent="1" style="shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.lambda;aspect=fixed;" value="" vertex="1">
-          <mxGeometry height="24" width="24" x="330" y="465" as="geometry" />
+          <mxGeometry height="24" width="24" x="280" y="465" as="geometry" />
         </mxCell>
-        <mxCell id="lambda-title" parent="1" style="text;html=1;align=left;verticalAlign=middle;fontSize=10;fontColor=#0b0c0c;" value="&lt;b&gt;AWS Lambda&lt;/b&gt; (×5 target functions) · Python 3.11 · Least-privilege IAM" vertex="1">
-          <mxGeometry height="20" width="480" x="360" y="465" as="geometry" />
+        <mxCell id="lambda-title" parent="1" style="text;html=1;align=left;verticalAlign=middle;fontSize=10;fontColor=#0b0c0c;" value="&lt;b&gt;AWS Lambda&lt;/b&gt; (×6 target functions) · Python 3.11 · Least-privilege IAM" vertex="1">
+          <mxGeometry height="20" width="480" x="310" y="465" as="geometry" />
         </mxCell>
         <mxCell id="lambda-note" parent="1" style="text;html=1;align=center;verticalAlign=middle;fontSize=9;fontColor=#505a5f;fontStyle=2;" value="Data accessors only — NO Bedrock calls. Orchestrator owns all LLM reasoning." vertex="1">
           <mxGeometry height="20" width="480" x="360" y="495" as="geometry" />
@@ -103,83 +106,92 @@
           <mxGeometry height="55" width="130" x="78" y="605" as="geometry" />
         </mxCell>
         <mxCell id="svc-athena" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#3F51B5;arcSize=10;" value="" vertex="1">
-          <mxGeometry height="90" width="180" x="276" y="600" as="geometry" />
+          <mxGeometry height="90" width="180" x="240" y="600" as="geometry" />
         </mxCell>
         <mxCell id="svc-athena-icon" parent="1" style="shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.athena;aspect=fixed;" value="" vertex="1">
-          <mxGeometry height="30" width="30" x="286" y="607" as="geometry" />
+          <mxGeometry height="30" width="30" x="250" y="607" as="geometry" />
         </mxCell>
         <mxCell id="svc-athena-label" parent="1" style="text;html=1;align=left;verticalAlign=middle;fontSize=9;fontColor=#0b0c0c;" value="&lt;b&gt;Amazon Athena&lt;/b&gt;&lt;br&gt;SQL over S3 Parquet&lt;br&gt;Read-only · Dedicated workgroup" vertex="1">
-          <mxGeometry height="55" width="130" x="314" y="605" as="geometry" />
+          <mxGeometry height="55" width="130" x="278" y="605" as="geometry" />
         </mxCell>
         <mxCell id="svc-sagemaker" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#3F51B5;arcSize=10;" value="" vertex="1">
-          <mxGeometry height="90" width="180" x="509" y="600" as="geometry" />
+          <mxGeometry height="90" width="180" x="440" y="600" as="geometry" />
         </mxCell>
         <mxCell id="svc-sm-icon" parent="1" style="shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.sagemaker;aspect=fixed;" value="" vertex="1">
-          <mxGeometry height="30" width="30" x="522" y="607" as="geometry" />
+          <mxGeometry height="30" width="30" x="450" y="607" as="geometry" />
         </mxCell>
         <mxCell id="svc-sm-label" parent="1" style="text;html=1;align=left;verticalAlign=middle;fontSize=9;fontColor=#0b0c0c;" value="&lt;b&gt;Amazon SageMaker&lt;/b&gt;&lt;br&gt;Model Registry (3 models)&lt;br&gt;Feature Store (offline only)" vertex="1">
-          <mxGeometry height="55" width="130" x="557" y="605" as="geometry" />
+          <mxGeometry height="55" width="130" x="485" y="605" as="geometry" />
         </mxCell>
         <mxCell id="svc-kb" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#3F51B5;arcSize=10;" value="" vertex="1">
-          <mxGeometry height="90" width="200" x="739" y="600" as="geometry" />
+          <mxGeometry height="90" width="200" x="640" y="600" as="geometry" />
         </mxCell>
         <mxCell id="svc-kb-icon" parent="1" style="shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.bedrock;aspect=fixed;" value="" vertex="1">
-          <mxGeometry height="30" width="30" x="746" y="607" as="geometry" />
+          <mxGeometry height="30" width="30" x="650" y="607" as="geometry" />
         </mxCell>
         <mxCell id="svc-kb-label" parent="1" style="text;html=1;align=left;verticalAlign=middle;fontSize=9;fontColor=#0b0c0c;" value="&lt;b&gt;Bedrock Knowledge Base&lt;/b&gt;&lt;br&gt;S3 Vectors (no OpenSearch)&lt;br&gt;5 governance docs · retrieve only" vertex="1">
-          <mxGeometry height="55" width="150" x="781" y="605" as="geometry" />
+          <mxGeometry height="55" width="150" x="685" y="605" as="geometry" />
+        </mxCell>
+        <mxCell id="svc-cloudtrail" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#3F51B5;arcSize=10;" value="" vertex="1">
+          <mxGeometry height="90" width="180" x="860" y="600" as="geometry" />
+        </mxCell>
+        <mxCell id="svc-ct-icon" parent="1" style="shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.cloudtrail;aspect=fixed;" value="" vertex="1">
+          <mxGeometry height="30" width="30" x="870" y="607" as="geometry" />
+        </mxCell>
+        <mxCell id="svc-ct-label" parent="1" style="text;html=1;align=left;verticalAlign=middle;fontSize=9;fontColor=#0b0c0c;" value="&lt;b&gt;AWS CloudTrail&lt;/b&gt;&lt;br&gt;LookupEvents API&lt;br&gt;Data access audit (90 days)" vertex="1">
+          <mxGeometry height="55" width="130" x="905" y="605" as="geometry" />
         </mxCell>
         <mxCell id="svc-s3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#3F51B5;arcSize=10;" value="" vertex="1">
-          <mxGeometry height="90" width="180" x="1007" y="600" as="geometry" />
+          <mxGeometry height="90" width="180" x="1060" y="600" as="geometry" />
         </mxCell>
         <mxCell id="svc-s3-icon" parent="1" style="shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.s3;aspect=fixed;" value="" vertex="1">
-          <mxGeometry height="30" width="30" x="1017" y="607" as="geometry" />
+          <mxGeometry height="30" width="30" x="1070" y="607" as="geometry" />
         </mxCell>
         <mxCell id="svc-s3-label" parent="1" style="text;html=1;align=left;verticalAlign=middle;fontSize=9;fontColor=#0b0c0c;" value="&lt;b&gt;Amazon S3&lt;/b&gt;&lt;br&gt;Parquet datasets (10 tables)&lt;br&gt;Athena results · KB source docs" vertex="1">
-          <mxGeometry height="55" width="130" x="1047" y="605" as="geometry" />
+          <mxGeometry height="55" width="130" x="1100" y="605" as="geometry" />
         </mxCell>
-        <mxCell id="arrow-l-glue" edge="1" parent="1" source="lambda-group" style="edgeStyle=orthogonalEdgeStyle;rounded=1;exitX=0.15;exitY=1;entryX=0.5;entryY=0;strokeColor=#3F51B5;strokeWidth=1;" target="svc-glue">
+        <mxCell id="arrow-l-glue" edge="1" parent="1" source="lambda-group" style="edgeStyle=orthogonalEdgeStyle;rounded=1;exitX=0.1;exitY=1;entryX=0.5;entryY=0;strokeColor=#3F51B5;strokeWidth=1;" target="svc-glue">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="404" y="560" />
+              <mxPoint x="336" y="560" />
               <mxPoint x="130" y="560" />
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="arrow-l-athena" edge="1" parent="1" source="lambda-group" style="edgeStyle=orthogonalEdgeStyle;rounded=1;exitX=0.3;exitY=1;entryX=0.5;entryY=0;strokeColor=#3F51B5;strokeWidth=1;" target="svc-athena">
+        <mxCell id="arrow-l-athena" edge="1" parent="1" source="lambda-group" style="edgeStyle=orthogonalEdgeStyle;rounded=1;exitX=0.25;exitY=1;entryX=0.5;entryY=0;strokeColor=#3F51B5;strokeWidth=1;" target="svc-athena">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="arrow-l-sm" edge="1" parent="1" source="lambda-group" style="edgeStyle=orthogonalEdgeStyle;rounded=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeColor=#3F51B5;strokeWidth=1;" target="svc-sagemaker">
+        <mxCell id="arrow-l-sm" edge="1" parent="1" source="lambda-group" style="edgeStyle=orthogonalEdgeStyle;rounded=1;exitX=0.42;exitY=1;entryX=0.5;entryY=0;strokeColor=#3F51B5;strokeWidth=1;exitDx=0;exitDy=0;exitPerimeter=0;" target="svc-sagemaker">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="arrow-l-kb" edge="1" parent="1" source="lambda-group" style="edgeStyle=orthogonalEdgeStyle;rounded=1;exitX=0.7;exitY=1;entryX=0.5;entryY=0;strokeColor=#3F51B5;strokeWidth=1;" target="svc-kb">
+        <mxCell id="arrow-l-kb" edge="1" parent="1" source="lambda-group" style="edgeStyle=orthogonalEdgeStyle;rounded=1;exitX=0.6;exitY=1;entryX=0.5;entryY=0;strokeColor=#3F51B5;strokeWidth=1;exitDx=0;exitDy=0;exitPerimeter=0;" target="svc-kb">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="arrow-l-s3" edge="1" parent="1" source="lambda-group" style="edgeStyle=orthogonalEdgeStyle;rounded=1;exitX=0.88;exitY=1.033;entryX=0.5;entryY=0;strokeColor=#3F51B5;strokeWidth=1;exitDx=0;exitDy=0;exitPerimeter=0;" target="svc-s3">
+        <mxCell id="arrow-l-ct" edge="1" parent="1" source="lambda-group" style="edgeStyle=orthogonalEdgeStyle;rounded=1;exitX=0.75;exitY=1;entryX=0.5;entryY=0;strokeColor=#3F51B5;strokeWidth=1;exitDx=0;exitDy=0;exitPerimeter=0;" target="svc-cloudtrail">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="arrow-l-s3" edge="1" parent="1" source="lambda-group" style="edgeStyle=orthogonalEdgeStyle;rounded=1;exitX=0.9;exitY=1;entryX=0.5;entryY=0;strokeColor=#3F51B5;strokeWidth=1;exitDx=0;exitDy=0;exitPerimeter=0;" target="svc-s3">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="813" y="560" />
-              <mxPoint x="1097" y="560" />
+              <mxPoint x="864" y="560" />
+              <mxPoint x="1150" y="560" />
             </Array>
-            <mxPoint x="903" y="540" as="sourcePoint" />
           </mxGeometry>
         </mxCell>
         <mxCell id="cognito-box" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FCE4EC;strokeColor=#C62828;arcSize=10;" value="" vertex="1">
-          <mxGeometry height="80" width="180" x="1027" y="280" as="geometry" />
+          <mxGeometry height="80" width="180" x="1077" y="280" as="geometry" />
         </mxCell>
         <mxCell id="cognito-icon" parent="1" style="shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.cognito;aspect=fixed;" value="" vertex="1">
-          <mxGeometry height="24" width="24" x="1037" y="287" as="geometry" />
+          <mxGeometry height="24" width="24" x="1087" y="287" as="geometry" />
         </mxCell>
         <mxCell id="cognito-label" parent="1" style="text;html=1;align=left;verticalAlign=middle;fontSize=9;fontColor=#0b0c0c;" value="&lt;b&gt;Amazon Cognito&lt;/b&gt;&lt;br&gt;M2M client-credentials&lt;br&gt;JWT for Gateway auth" vertex="1">
-          <mxGeometry height="55" width="130" x="1067" y="287" as="geometry" />
+          <mxGeometry height="55" width="130" x="1117" y="287" as="geometry" />
         </mxCell>
         <mxCell id="arrow-gw-cognito" edge="1" parent="1" source="gateway-group" style="edgeStyle=orthogonalEdgeStyle;rounded=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;fontSize=8;fontColor=#505a5f;strokeColor=#C62828;strokeWidth=1;dashed=1;exitDx=0;exitDy=0;" target="cognito-box" value="CUSTOM_JWT&lt;br&gt;validation">
-          <mxGeometry relative="1" x="-0.1695" y="-21" as="geometry">
-            <mxPoint x="-14" y="20" as="offset" />
-            <mxPoint x="827" y="350" as="sourcePoint" />
+          <mxGeometry relative="1" x="-0.1695" y="-20" as="geometry">
+            <mxPoint x="1" as="offset" />
           </mxGeometry>
         </mxCell>
-        <!-- Bedrock Guardrails -->
         <mxCell id="guardrails-box" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFEBEE;strokeColor=#C62828;arcSize=10;strokeWidth=2;" value="" vertex="1">
           <mxGeometry height="70" width="200" x="869" y="195" as="geometry" />
         </mxCell>
@@ -192,21 +204,20 @@
         <mxCell id="arrow-llm-guardrails" edge="1" parent="1" source="bedrock-llm" style="edgeStyle=orthogonalEdgeStyle;rounded=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;fontSize=8;fontColor=#505a5f;strokeColor=#C62828;strokeWidth=1;" target="guardrails-box" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-
         <mxCell id="region-badge" parent="1" style="text;html=1;align=right;verticalAlign=middle;fontSize=10;fontColor=#1d70b8;fontStyle=1;" value="🇬🇧 eu-west-2 (London) — all resources" vertex="1">
           <mxGeometry height="20" width="250" x="986" y="20" as="geometry" />
         </mxCell>
-        <mxCell id="dne1SCTuePiekISD9ikl-3" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&amp;nbsp;" vertex="1">
-          <mxGeometry height="30" width="60" x="530" y="733" as="geometry" />
+        <mxCell id="XXksAHH1qdLuQ5y_cwpf-1" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&amp;nbsp;" vertex="1">
+          <mxGeometry height="30" width="60" x="-20" y="310" as="geometry" />
         </mxCell>
-        <mxCell id="dne1SCTuePiekISD9ikl-5" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&amp;nbsp;" vertex="1">
-          <mxGeometry height="50" width="60" x="1210" y="390" as="geometry" />
+        <mxCell id="XXksAHH1qdLuQ5y_cwpf-2" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&amp;nbsp;" vertex="1">
+          <mxGeometry height="30" width="60" x="1240" y="230" as="geometry" />
         </mxCell>
-        <mxCell id="dne1SCTuePiekISD9ikl-6" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&amp;nbsp;" vertex="1">
-          <mxGeometry height="30" width="60" x="-27" y="290" as="geometry" />
+        <mxCell id="XXksAHH1qdLuQ5y_cwpf-3" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&amp;nbsp;" vertex="1">
+          <mxGeometry height="30" width="60" x="650" y="-16" as="geometry" />
         </mxCell>
-        <mxCell id="dne1SCTuePiekISD9ikl-7" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&amp;nbsp;" vertex="1">
-          <mxGeometry height="30" width="60" x="490" y="-10" as="geometry" />
+        <mxCell id="XXksAHH1qdLuQ5y_cwpf-4" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&amp;nbsp;" vertex="1">
+          <mxGeometry height="30" width="60" x="540" y="700" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
