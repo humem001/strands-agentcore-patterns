@@ -11,7 +11,7 @@ from constructs import Construct
 
 
 class MlAssetsStack(Stack):
-    """SageMaker model registry and offline feature store for the DWP demo."""
+    """SageMaker model registry and offline feature store for the demo."""
 
     def __init__(
         self,

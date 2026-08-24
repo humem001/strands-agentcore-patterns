@@ -1,4 +1,4 @@
-"""Cognito User Pool, Resource Server, and App Clients for DWP demo."""
+"""Cognito User Pool, Resource Server, and App Clients for demo."""
 
 from aws_cdk import (
     CfnOutput,
@@ -17,13 +17,13 @@ class CognitoStack(Stack):
         self.user_pool = cognito.UserPool(
             self,
             "UserPool",
-            user_pool_name="dwp-demo-pool",
+            user_pool_name="demo-pool",
             self_sign_up_enabled=False,
             mfa=cognito.Mfa.OFF,
             removal_policy=RemovalPolicy.DESTROY,
         )
 
-        domain_prefix = Fn.join("", ["dwp-demo-", self.account])
+        domain_prefix = Fn.join("", ["demo-", self.account])
 
         self.domain = self.user_pool.add_domain(
             "Domain",
@@ -41,19 +41,19 @@ class CognitoStack(Stack):
 
         resource_server = self.user_pool.add_resource_server(
             "ResourceServer",
-            identifier="dwp-demo-api",
-            user_pool_resource_server_name="dwp-demo-api",
+            identifier="demo-api",
+            user_pool_resource_server_name="demo-api",
             scopes=[runtime_invoke_scope, gateway_tools_scope],
         )
 
         self.inbound_client = self.user_pool.add_client(
             "InboundClient",
-            user_pool_client_name="dwp-demo-inbound",
+            user_pool_client_name="demo-inbound",
             generate_secret=True,
             o_auth=cognito.OAuthSettings(
                 flows=cognito.OAuthFlows(client_credentials=True),
                 scopes=[
-                    cognito.OAuthScope.custom("dwp-demo-api/runtime.invoke"),
+                    cognito.OAuthScope.custom("demo-api/runtime.invoke"),
                 ],
             ),
         )
@@ -61,12 +61,12 @@ class CognitoStack(Stack):
 
         self.m2m_client = self.user_pool.add_client(
             "M2mClient",
-            user_pool_client_name="dwp-demo-m2m",
+            user_pool_client_name="demo-m2m",
             generate_secret=True,
             o_auth=cognito.OAuthSettings(
                 flows=cognito.OAuthFlows(client_credentials=True),
                 scopes=[
-                    cognito.OAuthScope.custom("dwp-demo-api/gateway.tools"),
+                    cognito.OAuthScope.custom("demo-api/gateway.tools"),
                 ],
             ),
         )

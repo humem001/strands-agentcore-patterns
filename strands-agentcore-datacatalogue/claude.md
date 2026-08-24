@@ -11,7 +11,7 @@ Source brief: `/claude-demo/data_catalogue_governance_agent.md`
 - **Agent host: Bedrock AgentCore Runtime** — CodeZip build (Python zipped to S3, no Docker/ARM64 container), HTTP protocol (`/invocations`, SSE streaming). NOT Lambda + API Gateway.
 - **Agent framework: Strands SDK.** Streaming via `stream_async` — each reasoning/tool step must stream incrementally to the UI (the live reasoning panel is the demo's core value).
 - **LLM: Bedrock Claude Sonnet. Embeddings: Titan Text Embeddings v2.**
-- **Tools: AgentCore Gateway** (MCP) with **5 `lambda` targets exposing 10 tools**. Tool discovery is dynamic via `tools/list` (Gateway prefixes tools as `${target_name}___${tool_name}`).
+- **Tools: AgentCore Gateway** (MCP) with **6 `lambda` targets exposing 11 tools**. Tool discovery is dynamic via `tools/list` (Gateway prefixes tools as `${target_name}___${tool_name}`).
 
 ## Architecture Rules
 
@@ -33,7 +33,7 @@ Source brief: `/claude-demo/data_catalogue_governance_agent.md`
 
 - **Split deploy:** AWS CDK (Python) for data-plane infra (S3, Glue, Lambdas, Cognito, KB, SageMaker, IAM) + `@aws/agentcore` CLI with `agentcore.json` for Runtime, Gateway targets, and Identity provider. Orchestrated by `setup.sh`; full cleanup via `teardown.sh` (must include S3 Vectors store, KB, Gateway, Runtime, Cognito pool).
 - **One command creates everything:** `./setup.sh`. The human only provides credentials and runs it.
-- **Data: 10 synthetic datasets, fully fictional** — no real names, NINOs, or case references. SageMaker assets are metadata-only (no training); Feature Store is **offline-only** (no online store).
+- **Data: 10 synthetic datasets, fully fictional** — no real names, national identification numbers, or case references. SageMaker assets are metadata-only (no training); Feature Store is **offline-only** (no online store).
 - **Frontend: Streamlit, run locally** (`streamlit run app.py`). No frontend hosting infra.
 
 ## Build Process

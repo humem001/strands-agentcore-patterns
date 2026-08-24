@@ -4,7 +4,7 @@ import os
 import boto3
 
 glue = boto3.client("glue")
-DEFAULT_DATABASE = os.environ.get("GLUE_DATABASE", "dwp_data_catalogue")
+DEFAULT_DATABASE = os.environ.get("GLUE_DATABASE", "agency_data_catalogue")
 
 
 def _resolve_tool_name(event, context):

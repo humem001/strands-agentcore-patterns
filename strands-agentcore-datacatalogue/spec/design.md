@@ -111,11 +111,11 @@ claude-demo/
 │   ├── generate_parquet.py                   # Reads manifest → Parquet files
 │   ├── parquet/                              # Generated .parquet files (gitignored)
 │   └── governance_docs/                      # Bundled policy documents for KB
-│       ├── dwp_data_strategy_2023_2030.md
+│       ├── agency_data_strategy_2023_2030.md
 │       ├── fair_data_principles.md
-│       ├── dwp_data_sharing_policy.md
-│       ├── dwp_ai_security_policy.md
-│       └── dwp_information_management_policy.md
+│       ├── agency_data_sharing_policy.md
+│       ├── agency_ai_security_policy.md
+│       └── agency_information_management_policy.md
 │
 ├── agentcore.json                            # AgentCore CLI config (Gateway + Runtime)
 ├── setup.sh                                  # One-command deploy
@@ -188,7 +188,7 @@ Handles 5 tools via a dispatcher on `tool_name`:
 
 **IAM role:** `athena:StartQueryExecution`, `athena:GetQueryExecution`, `athena:GetQueryResults`, `glue:GetTable` (read), `glue:GetDatabase` (read), `s3:GetObject` on data bucket (read), `s3:PutObject`/`GetObject` on Athena results bucket only. **No** `glue:UpdateTable`, **no** S3 write to data bucket.
 
-**Workgroup:** Dedicated `dwp-demo-athena-wg` with fixed `OutputLocation` → `s3://dwp-demo-athena-results-{account}/`.
+**Workgroup:** Dedicated `demo-athena-wg` with fixed `OutputLocation` → `s3://demo-athena-results-{account}/`.
 
 #### 3.2.3 sagemaker-ml (`targets/sagemaker_ml/handler.py`)
 
@@ -224,7 +224,7 @@ Handles 5 tools via a dispatcher on `tool_name`:
 ```json
 {
   "gateway": {
-    "name": "dwp-demo-gateway",
+    "name": "demo-gateway",
     "authorizerConfig": {
       "type": "CUSTOM_JWT",
       "jwtConfiguration": {
@@ -340,10 +340,10 @@ Strands Agent               AgentCore Identity          Gateway
 
 | Resource | Purpose |
 |----------|---------|
-| User Pool (`dwp-demo-pool`) | Token issuer for both boundaries |
-| App Client 1 (`dwp-demo-inbound`) | Streamlit → Runtime (client-credentials, `runtime/invoke` scope) |
-| App Client 2 (`dwp-demo-m2m`) | Agent → Gateway (client-credentials, `gateway/tools` scope) |
-| Resource Server (`dwp-demo-api`) | Defines custom scopes |
+| User Pool (`demo-pool`) | Token issuer for both boundaries |
+| App Client 1 (`demo-inbound`) | Streamlit → Runtime (client-credentials, `runtime/invoke` scope) |
+| App Client 2 (`demo-m2m`) | Agent → Gateway (client-credentials, `gateway/tools` scope) |
+| Resource Server (`demo-api`) | Defines custom scopes |
 
 Both clients use `ALLOW_CLIENT_CREDENTIALS` auth flow. No user sign-up/sign-in configuration needed.
 
@@ -356,7 +356,7 @@ Both clients use `ALLOW_CLIENT_CREDENTIALS` auth flow. No user sign-up/sign-in c
 The single YAML manifest defines all 10 tables. Both the Parquet generator and Glue table creation read from this file.
 
 ```yaml
-database: dwp_data_catalogue
+database: agency_data_catalogue
 
 tables:
   - name: cms_payment_history
@@ -377,7 +377,7 @@ tables:
         pii: NONE
       - name: nino
         type: string
-        description: "National Insurance Number"
+        description: "national identification number"
         pii: HIGH
       - name: paying_parent_name
         type: string
@@ -416,11 +416,11 @@ Each table gets these `Parameters` at creation:
 
 Five markdown files bundled in `data/governance_docs/`, uploaded to the KB S3 data source bucket, then synced to S3 Vectors via Bedrock KB:
 
-1. `dwp_data_strategy_2023_2030.md` — real published content (gov.uk)
+1. `agency_data_strategy_2023_2030.md` — real published content (gov.uk)
 2. `fair_data_principles.md` — FAIR summary
-3. `dwp_data_sharing_policy.md` — synthetic (sharing with HMRC, Home Office, NHS; consent and legal gateways)
-4. `dwp_ai_security_policy.md` — real published content (gov.uk)
-5. `dwp_information_management_policy.md` — real published content (gov.uk)
+3. `agency_data_sharing_policy.md` — synthetic (sharing with external agencies, Home Office, NHS; consent and legal gateways)
+4. `agency_ai_security_policy.md` — real published content (gov.uk)
+5. `agency_information_management_policy.md` — real published content (gov.uk)
 
 ### 4.4 SageMaker Assets
 
@@ -438,7 +438,7 @@ Five markdown files bundled in `data/governance_docs/`, uploaded to the KB S3 da
 ### 5.1 System Prompt (summary)
 
 The system prompt instructs Claude to:
-- Act as a DWP Data Intelligence Agent
+- Act as a Data Intelligence Agent
 - Use available tools (discovered from Gateway) to answer questions
 - For PII classification: reason over column names/types/descriptions and classify as NONE/LOW/MEDIUM/HIGH
 - For SQL generation: always use `LIMIT 100`, never use DML/DDL, always show the SQL to the user
@@ -465,7 +465,7 @@ Each tool definition follows MCP tool schema format:
 ```json
 {
   "name": "search_catalogue",
-  "description": "Search the DWP data catalogue for datasets matching a query. Returns table names, descriptions, classifications, and owners.",
+  "description": "Search the agency data catalogue for datasets matching a query. Returns table names, descriptions, classifications, and owners.",
   "inputSchema": {
     "type": "object",
     "properties": {

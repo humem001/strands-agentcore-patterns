@@ -1,4 +1,4 @@
-"""DWP Data Intelligence Agent — Streamlit UI (GOV.UK Design System styling)."""
+"""Data Intelligence Agent — Streamlit UI (Government Design System styling)."""
 
 import json
 import os
@@ -13,7 +13,7 @@ AGENT_RUNTIME_ARN = os.environ.get("AGENT_RUNTIME_ARN", "")
 REGION = "eu-west-2"
 
 # ---------------------------------------------------------------------------
-# GOV.UK Design System styling
+# Government Design System styling
 # ---------------------------------------------------------------------------
 GOVUK_CSS = """
 <style>
@@ -28,7 +28,7 @@ html, body, [class*="css"] {
     color: #0b0c0c;
 }
 
-/* GOV.UK black header bar — aligned to content width */
+/* Government black header bar — aligned to content width */
 .govuk-header {
     background: #0b0c0c;
     border-bottom: 10px solid #1d70b8;
@@ -110,7 +110,7 @@ h1, h2, h3 { color: #0b0c0c !important; font-weight: 700 !important; }
     box-shadow: inset 0 0 0 2px #0b0c0c !important;
 }
 
-/* Buttons — GOV.UK green */
+/* Buttons — government green */
 .stButton button, .stFormSubmitButton button {
     background: #00703c !important;
     color: #fff !important;
@@ -201,7 +201,7 @@ GOVUK_HEADER = """
 </div>
 <div class="govuk-phase-banner">
     <span class="govuk-tag">Alpha</span>
-    <span>This is a prototype — Department for Work and Pensions data catalogue &amp; governance agent.</span>
+    <span>This is a prototype — agency data catalogue &amp; governance agent.</span>
 </div>
 """
 
@@ -318,7 +318,7 @@ def run_query(prompt, chat_box, reasoning_box):
         # (detected from the answer content for accuracy)
         tool_evidence = [
             ("search_catalogue", "Searched the data catalogue", "AWS Glue", ["datasets", "catalogue", "tables", "found"]),
-            ("classify_pii", "Classified PII sensitivity", "AWS Glue", ["PII", "NINO", "HIGH", "sensitivity", "classified"]),
+            ("classify_pii", "Classified PII sensitivity", "AWS Glue", ["PII", "national_id", "HIGH", "sensitivity", "classified"]),
             ("show_lineage", "Traced data lineage", "AWS Glue", ["upstream", "downstream", "lineage", "comes from"]),
             ("policy_search", "Searched governance policies", "Bedrock KB · S3 Vectors", ["policy", "sharing", "DPIA", "legal gateway", "DSA"]),
             ("query_dataset", "Executed live SQL query", "Amazon Athena", ["SELECT", "query", "rows"]),
@@ -356,7 +356,7 @@ def run_query(prompt, chat_box, reasoning_box):
 
 
 def main():
-    st.set_page_config(page_title="DWP Data Intelligence Agent", layout="wide")
+    st.set_page_config(page_title="Data Intelligence Agent", layout="wide")
     st.markdown(GOVUK_CSS, unsafe_allow_html=True)
     st.markdown(GOVUK_HEADER, unsafe_allow_html=True)
 
@@ -364,7 +364,7 @@ def main():
         st.session_state["messages"] = []
     if "session_id" not in st.session_state:
         # Runtime requires runtimeSessionId to be at least 33 chars.
-        st.session_state["session_id"] = f"dwp-ui-{uuid.uuid4().hex}"
+        st.session_state["session_id"] = f"agent-ui-{uuid.uuid4().hex}"
 
     # Question box — placed at the top, directly under the phase banner.
     with st.form(key="ask_form", clear_on_submit=True):

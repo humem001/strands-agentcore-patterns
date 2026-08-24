@@ -1,4 +1,4 @@
-"""DWP Data Intelligence Agent — Strands on AgentCore Runtime (CodeZip).
+"""Data Intelligence Agent — Strands on AgentCore Runtime (CodeZip).
 
 Connects to AgentCore Gateway (MCP) using a Cognito M2M token, discovers the
 10 tools via tools/list, and streams reasoning + tool steps back over SSE.
@@ -22,7 +22,7 @@ GATEWAY_URL = os.environ["GATEWAY_URL"]
 TOKEN_ENDPOINT = os.environ["COGNITO_TOKEN_ENDPOINT"]
 M2M_CLIENT_ID = os.environ["COGNITO_M2M_CLIENT_ID"]
 M2M_CLIENT_SECRET = os.environ["COGNITO_M2M_CLIENT_SECRET"]
-M2M_SCOPE = os.environ.get("COGNITO_M2M_SCOPE", "dwp-demo-api/gateway.tools")
+M2M_SCOPE = os.environ.get("COGNITO_M2M_SCOPE", "demo-api/gateway.tools")
 
 GUARDRAIL_ID = os.environ.get("GUARDRAIL_ID", "hf6qyzh9j13b")
 GUARDRAIL_VERSION = os.environ.get("GUARDRAIL_VERSION", "DRAFT")

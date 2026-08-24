@@ -1,4 +1,4 @@
-database: dwp_data_catalogue
+database: agency_data_catalogue
 
 tables:
   - name: cms_payment_history
@@ -20,7 +20,7 @@ tables:
         pii: NONE
       - name: nino
         type: string
-        description: "National Insurance Number of paying parent"
+        description: "National identification number of paying parent"
         pii: HIGH
       - name: paying_parent_name
         type: string
@@ -77,7 +77,7 @@ tables:
     row_count: 200
     lineage:
       upstream: ["cms_payment_history", "CMS2012 change of circumstances (external)"]
-      downstream: ["CMS2012 caseworker screens (external)", "service_performance_kpis"]
+      downstream: ["CMS2012 case worker screens (external)", "service_performance_kpis"]
       transformation: "Monthly SageMaker batch pipeline — XGBoost + SHAP"
     columns:
       - name: case_id
@@ -86,7 +86,7 @@ tables:
         pii: LOW
       - name: nino
         type: string
-        description: "National Insurance Number of paying parent"
+        description: "National identification number of paying parent"
         pii: HIGH
       - name: prediction_date
         type: date
@@ -118,15 +118,15 @@ tables:
         pii: NONE
 
   - name: uc_claimant_journal
-    description: "Work search journal entries from Universal Credit claimants"
+    description: "Work search journal entries from benefit claimants"
     classification: HIGH
-    owner: "Universal Credit Data Team"
+    owner: "Benefits Data Team"
     steward: "R. Okafor"
-    pdu: "Universal Credit"
+    pdu: "Benefits"
     location_suffix: "uc_claimant_journal/"
     row_count: 150
     lineage:
-      upstream: ["Universal Credit Full Service (external)"]
+      upstream: ["Benefits Full Service (external)"]
       downstream: ["fraud_referral_outcomes", "jcs_chatbot_interactions"]
       transformation: "Real-time event stream, daily Parquet partitioned by date"
     columns:
@@ -140,7 +140,7 @@ tables:
         pii: MEDIUM
       - name: nino
         type: string
-        description: "National Insurance Number"
+        description: "National identification number"
         pii: HIGH
       - name: full_name
         type: string
@@ -168,15 +168,15 @@ tables:
         pii: LOW
 
   - name: uc_payment_calculations
-    description: "Monthly Universal Credit payment calculations including elements and deductions"
+    description: "Monthly benefit payment calculations including elements and deductions"
     classification: HIGH
-    owner: "Universal Credit Data Team"
+    owner: "Benefits Data Team"
     steward: "R. Okafor"
-    pdu: "Universal Credit"
+    pdu: "Benefits"
     location_suffix: "uc_payment_calculations/"
     row_count: 150
     lineage:
-      upstream: ["Universal Credit Full Service (external)", "HMRC RTI feed (external)"]
+      upstream: ["Benefits Full Service (external)", "Revenue Authority RTI feed (external)"]
       downstream: ["service_performance_kpis"]
       transformation: "Monthly calculation engine output, extracted to analytics platform"
     columns:
@@ -190,7 +190,7 @@ tables:
         pii: MEDIUM
       - name: nino
         type: string
-        description: "National Insurance Number"
+        description: "National identification number"
         pii: HIGH
       - name: assessment_period_start
         type: date
@@ -242,7 +242,7 @@ tables:
     location_suffix: "pension_credit_eligibility/"
     row_count: 100
     lineage:
-      upstream: ["State Pension system (external)", "HMRC income data (external)"]
+      upstream: ["State Pension system (external)", "Revenue Authority income data (external)"]
       downstream: ["service_performance_kpis"]
       transformation: "Weekly batch assessment from eligibility rules engine"
     columns:
@@ -252,7 +252,7 @@ tables:
         pii: NONE
       - name: nino
         type: string
-        description: "National Insurance Number"
+        description: "National identification number"
         pii: HIGH
       - name: full_name
         type: string
@@ -280,7 +280,7 @@ tables:
         pii: NONE
       - name: partner_nino
         type: string
-        description: "Partner National Insurance Number (if applicable)"
+        description: "Partner national identification number (if applicable)"
         pii: HIGH
       - name: postcode
         type: string
@@ -296,7 +296,7 @@ tables:
     location_suffix: "fraud_referral_outcomes/"
     row_count: 100
     lineage:
-      upstream: ["uc_claimant_journal", "cms_payment_history", "HMRC RTI feed (external)"]
+      upstream: ["uc_claimant_journal", "cms_payment_history", "Revenue Authority RTI feed (external)"]
       downstream: ["service_performance_kpis"]
       transformation: "Rules engine + ML model referrals, outcomes logged by investigators"
     columns:
@@ -306,7 +306,7 @@ tables:
         pii: NONE
       - name: nino
         type: string
-        description: "National Insurance Number of subject"
+        description: "National identification number of subject"
         pii: HIGH
       - name: full_name
         type: string
@@ -341,13 +341,13 @@ tables:
         description: "Benefit involved (UC, CMS, Pension Credit)"
         pii: NONE
 
-  - name: dwp_staff_training_records
+  - name: agency_staff_training_records
     description: "Staff training and certification completion records"
     classification: MEDIUM
     owner: "People & Capability Data Team"
     steward: "J. Barker"
     pdu: "People & Capability"
-    location_suffix: "dwp_staff_training_records/"
+    location_suffix: "agency_staff_training_records/"
     row_count: 100
     lineage:
       upstream: ["Learning Management System (external)"]
@@ -360,7 +360,7 @@ tables:
         pii: NONE
       - name: staff_id
         type: string
-        description: "DWP staff identifier"
+        description: "Agency staff identifier"
         pii: MEDIUM
       - name: full_name
         type: string
@@ -392,7 +392,7 @@ tables:
         pii: NONE
       - name: directorate
         type: string
-        description: "DWP directorate"
+        description: "Agency directorate"
         pii: NONE
 
   - name: jcs_chatbot_interactions
@@ -446,15 +446,15 @@ tables:
         pii: NONE
 
   - name: service_performance_kpis
-    description: "Cross-DWP operational KPI aggregates by service line and period"
+    description: "Cross-agency operational KPI aggregates by service line and period"
     classification: NONE
     owner: "Performance & Analytics Team"
     steward: "K. Ng"
-    pdu: "Cross-DWP"
+    pdu: "Cross-Agency"
     location_suffix: "service_performance_kpis/"
     row_count: 50
     lineage:
-      upstream: ["cms_payment_history", "cms_compliance_predictions", "uc_payment_calculations", "fraud_referral_outcomes", "dwp_staff_training_records"]
+      upstream: ["cms_payment_history", "cms_compliance_predictions", "uc_payment_calculations", "fraud_referral_outcomes", "agency_staff_training_records"]
       downstream: []
       transformation: "Monthly aggregate pipeline from source operational datasets"
     columns:
@@ -464,7 +464,7 @@ tables:
         pii: NONE
       - name: service_line
         type: string
-        description: "DWP service line (CMS, UC, Pension Credit, Fraud)"
+        description: "Agency service line (CMS, Benefits, Pension Credit, Fraud)"
         pii: NONE
       - name: metric_name
         type: string
@@ -496,7 +496,7 @@ tables:
         pii: NONE
 
   - name: config_resource_inventory
-    description: "AWS Config resource inventory for DWP cloud infrastructure"
+    description: "AWS Config resource inventory for agency cloud infrastructure"
     classification: NONE
     owner: "Cloud Platform Team"
     steward: "D. Ahmed"

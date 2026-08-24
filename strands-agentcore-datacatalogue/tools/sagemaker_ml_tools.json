@@ -1,7 +1,7 @@
 [
   {
     "name": "list_ml_models",
-    "description": "List SageMaker model package groups and feature groups in the DWP account. Optionally filter by keyword.",
+    "description": "List SageMaker model package groups and feature groups in the agency account. Optionally filter by keyword.",
     "inputSchema": {
       "type": "object",
       "properties": {

@@ -28,7 +28,7 @@ def stack_outputs(cf, *stacks):
 
 
 def ensure_gateway_role(iam, account_id):
-    role_name = "dwp-demo-gateway-role"
+    role_name = "demo-gateway-role"
     trust = {
         "Version": "2012-10-17",
         "Statement": [{
@@ -54,7 +54,7 @@ def ensure_gateway_role(iam, account_id):
             "Statement": [{
                 "Effect": "Allow",
                 "Action": "lambda:InvokeFunction",
-                "Resource": f"arn:aws:lambda:{REGION}:{account_id}:function:dwp-demo-*",
+                "Resource": f"arn:aws:lambda:{REGION}:{account_id}:function:demo-*",
             }],
         }),
     )
@@ -64,7 +64,7 @@ def ensure_gateway_role(iam, account_id):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--gateway-name", default="dwp-demo-gateway")
+    parser.add_argument("--gateway-name", default="demo-gateway")
     args = parser.parse_args()
 
     session = boto3.Session(region_name=REGION)

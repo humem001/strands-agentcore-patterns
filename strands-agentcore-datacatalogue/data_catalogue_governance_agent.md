@@ -57,11 +57,11 @@ Still confirm model access is switched on in the console before deploy (one-time
 
 ## Overview
 
-An AI-powered data discovery and governance agent for the Department for Work and Pensions (DWP). Data analysts, caseworkers, and business users interact with DWP's data catalogue through natural language — finding datasets, understanding content, checking sensitivity, exploring lineage, and querying live data.
+An AI-powered data discovery and governance agent for a fictional government social security agency. Data analysts, case workers, and business users interact with the agency's data catalogue through natural language — finding datasets, understanding content, checking sensitivity, exploring lineage, and querying live data.
 
 ## Problem Statement
 
-DWP has 27 petabytes of data across ~20 Programme Delivery Units (PDUs), with 750 data analysts and 9,000 dashboard users. Their published Data Strategy 2023–2030 states:
+The agency has 27 petabytes of data across ~20 Programme Delivery Units (PDUs), with 750 data analysts and 9,000 dashboard users. A published Data Strategy 2023–2030 states:
 
 > "A data catalogue with advanced search functions will cut discovery time from sometimes **months** to only **hours**."
 
@@ -69,12 +69,12 @@ Currently:
 - Data discovery relies on tribal knowledge, emailing colleagues, or browsing spreadsheets
 - There is no intelligent, searchable catalogue with AI-powered metadata
 - Understanding a dataset (columns, PII, lineage) requires finding the person who built it
-- Non-technical users (caseworkers, policy teams) cannot self-serve data insights
+- Non-technical users (case workers, policy teams) cannot self-serve data insights
 - Metadata is often missing, incomplete, or out of date
 
 ## Solution
 
-A conversational AI agent built with the **Strands SDK**, hosted on **Amazon Bedrock AgentCore Runtime**, using **Bedrock (Claude Sonnet)** for reasoning. It sits on top of DWP's existing data estate (S3 + AWS Glue Data Catalog + Amazon Athena) and provides natural language access to:
+A conversational AI agent built with the **Strands SDK**, hosted on **Amazon Bedrock AgentCore Runtime**, using **Bedrock (Claude Sonnet)** for reasoning. It sits on top of the agency's existing data estate (S3 + AWS Glue Data Catalog + Amazon Athena) and provides natural language access to:
 
 1. **Dataset discovery** — search and browse the data catalogue
 2. **Dataset understanding** — explain columns, types, and purpose
@@ -116,12 +116,12 @@ A conversational AI agent built with the **Strands SDK**, hosted on **Amazon Bed
 
 | User | Example Question |
 |------|-----------------|
-| Data Analyst | "Find me datasets related to Universal Credit fraud" |
-| Caseworker | "What data do we have about a claimant's payment history?" |
+| Data Analyst | "Find me datasets related to benefit payment fraud" |
+| Case Worker | "What data do we have about a claimant's payment history?" |
 | Data Engineer | "Show me the lineage for the compliance prediction score" |
-| Policy Team | "Can I share this dataset with HMRC?" |
+| Policy Team | "Can I share this dataset with an external agency?" |
 | New Starter | "I've just joined the fraud team — what data is available to me?" |
-| Data Steward | "Which datasets contain National Insurance numbers?" |
+| Data Steward | "Which datasets contain national identification numbers?" |
 ## Architecture
 
 ### Overview
@@ -260,7 +260,7 @@ This avoids "Claude calling a tool that calls Claude," keeps target Lambdas chea
 - `NONE` — no PII
 - `LOW` — indirect identifiers (postcode, date of birth)
 - `MEDIUM` — quasi-identifiers (full name, email)
-- `HIGH` — direct identifiers (NINO, bank account)
+- `HIGH` — direct identifiers (national ID number, bank account)
 **Input:** `database: str`, `table_name: str`
 **Output:** Columns with PII classification + reasoning.
 
@@ -278,7 +278,7 @@ This avoids "Claude calling a tool that calls Claude," keeps target Lambdas chea
 
 ### 6. `suggest_joins`
 **Purpose:** Recommend how to join datasets for an analytical goal.
-**Implementation:** Target returns schemas of candidate tables; orchestrator matches keys (`nino`, `case_id`, `claimant_id`) and suggests joins.
+**Implementation:** Target returns schemas of candidate tables; orchestrator matches keys (`national_id`, `case_id`, `claimant_id`) and suggests joins.
 **Input:** `goal: str`
 **Output:** Tables, join keys, caveats (granularity mismatches).
 
@@ -291,7 +291,7 @@ This avoids "Claude calling a tool that calls Claude," keeps target Lambdas chea
 **Demo pacing note (v5):** first Athena query of a session can take a few seconds (per-query engine startup — a `setup.sh` warm-up hours earlier doesn't help). Mitigation: the reasoning panel shows "⏳ query_dataset running…" so the wait reads as the agent working; optionally fire a throwaway query manually right before presenting.
 
 ### 8. `policy_search`
-**Purpose:** Answer governance/compliance questions from DWP policy docs.
+**Purpose:** Answer governance/compliance questions from agency policy docs.
 **Implementation (v5):** Target calls Bedrock KB **`retrieve` only** (KB backed by S3 Vectors), returning ranked chunks + source metadata. The **orchestrator synthesises the answer and formats citations** — no KB-side generation. Keeps the "orchestrator owns reasoning" rule exception-free, makes synthesis visible in the reasoning panel, and gives full citation control.
 **Input:** `question: str`
 **Output:** Answer grounded in policy docs with citations (synthesised by orchestrator from retrieved chunks).
@@ -335,19 +335,19 @@ Every synthetic table carries these custom properties (set directly at table cre
 |---------|-------------|-------------|------|-----|
 | `cms_payment_history` | Child Maintenance | Monthly Collect & Pay records | 200 | HIGH |
 | `cms_compliance_predictions` | Child Maintenance | XGBoost risk scores | 200 | MEDIUM |
-| `uc_claimant_journal` | Universal Credit | Work search journal entries | 150 | HIGH |
-| `uc_payment_calculations` | Universal Credit | Monthly payment calcs/deductions | 150 | HIGH |
+| `uc_claimant_journal` | Benefits | Work search journal entries | 150 | HIGH |
+| `uc_payment_calculations` | Benefits | Monthly payment calcs/deductions | 150 | HIGH |
 | `pension_credit_eligibility` | Later Life | Eligibility assessments | 100 | HIGH |
 | `fraud_referral_outcomes` | Fraud & Error | Investigation outcomes/flags | 100 | HIGH |
-| `dwp_staff_training_records` | People & Capability | Training completions | 100 | MEDIUM |
+| `agency_staff_training_records` | People & Capability | Training completions | 100 | MEDIUM |
 | `jcs_chatbot_interactions` | Working Age Services | Chatbot conversation logs | 100 | LOW |
-| `service_performance_kpis` | Cross-DWP | Operational KPI aggregates | 50 | NONE |
+| `service_performance_kpis` | Cross-Agency | Operational KPI aggregates | 50 | NONE |
 | `config_resource_inventory` | Platform/Cloud | AWS Config resource inventory | 50 | NONE |
 
 ### Requirements
-- All data fully fictional — no real names, NINOs, or case references
-- Realistic DWP column names
-- Obvious PII (nino, full_name, date_of_birth, address, bank_sort_code) for classification testing
+- All data fully fictional — no real names, national identification numbers, or case references
+- Realistic agency column names
+- Obvious PII (national_id, full_name, date_of_birth, address, bank_sort_code) for classification testing
 - Non-obvious PII (postcode, phone_number) for reasoning
 - Lineage + owner/steward in Glue properties
 
@@ -361,18 +361,18 @@ cms_payment_history:
 
 cms_compliance_predictions:
   upstream: ["cms_payment_history", "CMS2012 change of circumstances (external)"]
-  downstream: ["CMS2012 caseworker screens (external)", "service_performance_kpis"]
+  downstream: ["CMS2012 case worker screens (external)", "service_performance_kpis"]
   transformation: "Monthly SageMaker batch pipeline — XGBoost + SHAP"
   owner: "Child Maintenance Data Team"  steward: "A. Patel"
 
 uc_claimant_journal:
-  upstream: ["Universal Credit Full Service (external)"]
+  upstream: ["Benefits Full Service (external)"]
   downstream: ["fraud_referral_outcomes", "jcs_chatbot_interactions"]
   transformation: "Real-time event stream, daily Parquet partitioned by date"
-  owner: "Universal Credit Data Team"  steward: "R. Okafor"
+  owner: "Benefits Data Team"  steward: "R. Okafor"
 
 fraud_referral_outcomes:
-  upstream: ["uc_claimant_journal", "cms_payment_history", "HMRC RTI feed (external)"]
+  upstream: ["uc_claimant_journal", "cms_payment_history", "Revenue Authority RTI feed (external)"]
   downstream: ["service_performance_kpis"]
   transformation: "Rules engine + ML model referrals, outcomes logged by investigators"
   owner: "Counter Fraud Data Team"  steward: "S. Lewis"
@@ -380,13 +380,13 @@ fraud_referral_outcomes:
 
 ## Bedrock Knowledge Base (S3 Vectors)
 
-**Vector store: S3 Vectors** (not OpenSearch Serverless). **Bundle static copies of the docs in the repo** — do not fetch live gov.uk URLs at deploy time (fragile). Source URLs for reference/provenance:
+**Vector store: S3 Vectors** (not OpenSearch Serverless). **Bundle static copies of the docs in the repo** — do not fetch live external URLs at deploy time (fragile). Source documents:
 
-1. **DWP Data Strategy 2023-2030** — https://www.gov.uk/government/publications/dwp-data-strategy-2023-to-2030/dwp-data-strategy-2023-to-2030
+1. **Agency Data Strategy 2023-2030** (synthetic)
 2. **FAIR Data Principles** — summary of Findable, Accessible, Interoperable, Reusable
-3. **DWP Data Sharing Policy** (synthetic) — sharing with OGDs (HMRC, Home Office, NHS), consent, legal gateways
-4. **DWP AI Security Policy** — https://www.gov.uk/government/publications/dwp-procurement-security-policies-and-standards/artificial-intelligence-security-policy
-5. **DWP Information Management Policy** — https://www.gov.uk/government/publications/dwp-information-management-policies/dwp-information-management-policy
+3. **Agency Data Sharing Policy** (synthetic) — sharing with other government departments, consent, legal gateways
+4. **Agency AI Security Policy** (synthetic)
+5. **Agency Information Management Policy** (synthetic)
 ## Tech Stack Summary
 
 | Component | AWS Service | Purpose |
@@ -411,15 +411,15 @@ fraud_referral_outcomes:
 ### Layout: Chat + Agent Reasoning Panel
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│  DWP Data Intelligence Agent                                        │
+│  Data Intelligence Agent                                        │
 ├───────────────────────────────────┬─────────────────────────────────┤
 │  💬 Chat                          │  🧠 Agent Reasoning (live)      │
 │  User: Find datasets about fraud  │  🔍 search_catalogue q:"fraud"  │
 │  Agent: I found 3 datasets...     │  ✅ 3 results                   │
-│  User: Which contain NINOs?       │  🔍 classify_pii fraud_ref...   │
-│  Agent: 2 of the 3 datasets...    │  ✅ HIGH: nino                  │
-│  ┌─────────────────────────────┐  │  🔍 classify_pii cms_payment... │
-│  │ Ask a question...        ⏎  │  │  ✅ HIGH: nino, name            │
+│  User: Which contain ID numbers?  │  🔍 classify_pii fraud_ref...   │
+│  Agent: 2 of the 3 datasets...    │  ✅ HIGH: national_id            │
+│                                   │  🔍 classify_pii cms_payment... │
+│  │ Ask a question...        ⏎  │  │  ✅ HIGH: national_id, name     │
 │  └─────────────────────────────┘  │                                 │
 └───────────────────────────────────┴─────────────────────────────────┘
 ```
@@ -440,22 +440,22 @@ fraud_referral_outcomes:
 
 | Target | Lambda | Tools | AWS Wrapped |
 |--------|--------|-------|-------------|
-| `glue-catalogue` | `dwp-demo-glue-target` | search_catalogue, get_dataset_detail, show_lineage, generate_metadata, suggest_joins | Glue (get_table, get_tables, search_tables; update_table **IAM-gated behind write-back flag, off by default**) |
-| `athena-query` | `dwp-demo-athena-target` | query_dataset | Athena (start_query_execution, get_query_results) — read-only IAM |
-| `sagemaker-ml` | `dwp-demo-sagemaker-target` | list_ml_models, describe_ml_asset | SageMaker (list/describe model packages + feature groups) |
-| `pii-classifier` | `dwp-demo-pii-target` | classify_pii | Glue (schema/sample only — no Bedrock; orchestrator reasons) |
-| `governance-kb` | `dwp-demo-kb-target` | policy_search | Bedrock KB (**retrieve only** — returns chunks; orchestrator synthesises) |
+| `glue-catalogue` | `demo-glue-target` | search_catalogue, get_dataset_detail, show_lineage, generate_metadata, suggest_joins | Glue (get_table, get_tables, search_tables; update_table **IAM-gated behind write-back flag, off by default**) |
+| `athena-query` | `demo-athena-target` | query_dataset | Athena (start_query_execution, get_query_results) — read-only IAM |
+| `sagemaker-ml` | `demo-sagemaker-target` | list_ml_models, describe_ml_asset | SageMaker (list/describe model packages + feature groups) |
+| `pii-classifier` | `demo-pii-target` | classify_pii | Glue (schema/sample only — no Bedrock; orchestrator reasons) |
+| `governance-kb` | `demo-kb-target` | policy_search | Bedrock KB (**retrieve only** — returns chunks; orchestrator synthesises) |
 
 ## Demo Scenarios (also the integration smoke test)
 
 1. **Discovery**: "I'm new to the fraud team — what datasets are available?"
 2. **Understanding**: "What columns are in the CMS payment history table?"
-3. **PII Audit**: "Which datasets contain National Insurance numbers?"
+3. **PII Audit**: "Which datasets contain national identification numbers?"
 4. **Lineage**: "Where does the compliance prediction score come from?"
 5. **Metadata Generation**: "Generate a description for the jcs_chatbot_interactions table"
 6. **Join Recommendation**: "I want to link fraud referrals to payment history — how?"
 7. **Live Query**: "Show me the top 10 cases with the highest non-compliance risk score"
-8. **Governance**: "Can I share Universal Credit claimant data with HMRC?"
+8. **Governance**: "Can I share benefit claimant data with an external agency?"
 9. **Multi-step**: "Find all HIGH PII datasets, show me their lineage, and tell me who owns them"
 10. **ML Discovery**: "What ML models do we have for fraud detection?"
 11. **ML + Data Lineage**: "What data was the compliance predictor trained on, and where does that come from?"
@@ -532,8 +532,8 @@ This is a demo/pilot/MVP — **no mocked unit tests**. Instead:
 - Reasoning panel streams tool calls live
 - The whole interaction takes seconds, not months
 
-## Context: Why This Matters for DWP
-- DWP Data Strategy explicitly calls for this capability
+## Context: Why This Matters
+- The agency Data Strategy explicitly calls for this capability
 - 27 PB across 20+ PDUs is largely undiscoverable without tribal knowledge
 - FAIR adoption is a stated goal, not yet achieved
 - 750 analysts spend significant time finding/understanding data before using it

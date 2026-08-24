@@ -1,11 +1,11 @@
 [
   {
     "name": "policy_search",
-    "description": "Search DWP governance policy documents (data strategy, sharing policy, FAIR principles, AI security, information management). Returns relevant text chunks with source citations.",
+    "description": "Search agency governance policy documents (data strategy, sharing policy, FAIR principles, AI security, information management). Returns relevant text chunks with source citations.",
     "inputSchema": {
       "type": "object",
       "properties": {
-        "question": {"type": "string", "description": "Governance or compliance question (e.g., 'Can I share UC data with HMRC?')"}
+        "question": {"type": "string", "description": "Governance or compliance question (e.g., 'Can I share data with an external agency?')"}
       },
       "required": ["question"]
     }

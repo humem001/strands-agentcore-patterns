@@ -29,7 +29,7 @@ SCENARIOS = [
     {
         "id": 3,
         "name": "PII Audit",
-        "prompt": "Which datasets contain National Insurance numbers?",
+        "prompt": "Which datasets contain national identification numbers?",
         "check_keywords": ["nino", "HIGH"],
     },
     {
@@ -59,8 +59,8 @@ SCENARIOS = [
     {
         "id": 8,
         "name": "Governance",
-        "prompt": "Can I share Universal Credit claimant data with HMRC?",
-        "check_keywords": ["share", "HMRC"],
+        "prompt": "Can I share benefit claimant data with an external agency?",
+        "check_keywords": ["share", "external agency"],
     },
     {
         "id": 9,

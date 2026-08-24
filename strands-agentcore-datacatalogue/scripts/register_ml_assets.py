@@ -98,7 +98,7 @@ def register_model_packages(sm, bucket_name: str):
 
 def get_or_create_feature_store_role(bucket_name: str) -> str:
     iam = boto3.client("iam")
-    role_name = "dwp-demo-feature-store-role"
+    role_name = "demo-feature-store-role"
     try:
         resp = iam.get_role(RoleName=role_name)
         return resp["Role"]["Arn"]

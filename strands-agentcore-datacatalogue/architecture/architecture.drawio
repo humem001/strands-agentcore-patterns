@@ -1,5 +1,5 @@
 <mxfile host="app.diagrams.net" agent="Claude">
-  <diagram id="dwp-data-catalogue-agent" name="Architecture">
+  <diagram id="data-catalogue-agent" name="Architecture">
     <mxGraphModel dx="3253" dy="1615" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="900" math="0" shadow="0">
       <root>
         <mxCell id="0" />
@@ -10,7 +10,7 @@
         <mxCell id="ui-group" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3f2f1;strokeColor=#b1b4b6;dashed=1;arcSize=8;" value="" vertex="1">
           <mxGeometry height="120" width="280" x="40" y="80" as="geometry" />
         </mxCell>
-        <mxCell id="ui-label" parent="1" style="text;html=1;align=center;verticalAlign=middle;fontSize=11;fontColor=#0b0c0c;" value="&lt;b&gt;Streamlit UI&lt;/b&gt;&lt;br&gt;(local, GOV.UK styled)" vertex="1">
+        <mxCell id="ui-label" parent="1" style="text;html=1;align=center;verticalAlign=middle;fontSize=11;fontColor=#0b0c0c;" value="&lt;b&gt;Streamlit UI&lt;/b&gt;&lt;br&gt;(local, government-themed)" vertex="1">
           <mxGeometry height="20" width="160" x="100" y="85" as="geometry" />
         </mxCell>
         <mxCell id="ui-chat" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#0b0c0c;fontSize=10;" value="💬 Chat Panel" vertex="1">

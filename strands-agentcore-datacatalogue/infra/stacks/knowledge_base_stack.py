@@ -73,7 +73,7 @@ class KnowledgeBaseStack(Stack):
         kb = bedrock.CfnKnowledgeBase(
             self,
             "GovernanceKb",
-            name="dwp-demo-governance-kb",
+            name="demo-governance-kb",
             role_arn=kb_role.role_arn,
             knowledge_base_configuration=bedrock.CfnKnowledgeBase.KnowledgeBaseConfigurationProperty(
                 type="VECTOR",
@@ -84,8 +84,8 @@ class KnowledgeBaseStack(Stack):
             storage_configuration=bedrock.CfnKnowledgeBase.StorageConfigurationProperty(
                 type="S3_VECTORS",
                 s3_vectors_configuration=bedrock.CfnKnowledgeBase.S3VectorsConfigurationProperty(
-                    vector_bucket_arn=f"arn:aws:s3vectors:eu-west-2:{Aws.ACCOUNT_ID}:bucket/dwp-demo-kb-vectors",
-                    index_name="dwp-demo-governance-index",
+                    vector_bucket_arn=f"arn:aws:s3vectors:eu-west-2:{Aws.ACCOUNT_ID}:bucket/demo-kb-vectors",
+                    index_name="demo-governance-index",
                 ),
             ),
         )
@@ -93,7 +93,7 @@ class KnowledgeBaseStack(Stack):
         data_source = bedrock.CfnDataSource(
             self,
             "KbDataSource",
-            name="dwp-demo-kb-datasource",
+            name="demo-kb-datasource",
             knowledge_base_id=kb.attr_knowledge_base_id,
             data_source_configuration=bedrock.CfnDataSource.DataSourceConfigurationProperty(
                 type="S3",

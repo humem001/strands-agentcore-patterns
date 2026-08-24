@@ -6,8 +6,8 @@ import boto3
 
 athena = boto3.client("athena")
 
-GLUE_DATABASE = os.environ.get("GLUE_DATABASE", "dwp_data_catalogue")
-ATHENA_WORKGROUP = os.environ.get("ATHENA_WORKGROUP", "dwp-demo-athena-wg")
+GLUE_DATABASE = os.environ.get("GLUE_DATABASE", "agency_data_catalogue")
+ATHENA_WORKGROUP = os.environ.get("ATHENA_WORKGROUP", "demo-athena-wg")
 ATHENA_OUTPUT_LOCATION = os.environ.get("ATHENA_OUTPUT_LOCATION", "")
 
 

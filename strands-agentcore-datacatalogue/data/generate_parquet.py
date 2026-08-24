@@ -3,7 +3,7 @@
 Generate synthetic Parquet files from the data manifest.
 
 Reads data/manifest.yaml and produces one Parquet file per table into data/parquet/.
-All data is entirely fictional — no real names, NINOs, or case references.
+All data is entirely fictional — no real names, national identification numbers, or case references.
 """
 
 import os
@@ -69,7 +69,7 @@ COURSE_CATEGORIES = ["mandatory", "elective", "specialist"]
 
 DIRECTORATES = [
     "Child Maintenance Group",
-    "Universal Credit Programme",
+    "Benefits Programme",
     "Work & Health Services",
     "Counter Fraud & Compliance",
     "Digital Group",
@@ -178,8 +178,8 @@ COMPLIANCE_STATUSES_CONFIG = ["COMPLIANT", "NON_COMPLIANT"]
 # ---------- Generator helpers ----------
 
 
-def generate_nino():
-    """Generate a UK-format National Insurance Number (e.g. AB123456C)."""
+def generate_national_id():
+    """Generate a fictional national identification number (e.g. AB123456C)."""
     prefix_letters = "ABCEGHJKLMNPRSTWXYZ"
     suffix_letters = "ABCD"
     first = random.choice(prefix_letters)
@@ -207,7 +207,7 @@ def generate_aws_account_id():
 
 def generate_resource_name():
     """Generate a plausible AWS resource name."""
-    prefixes = ["dwp", "cms", "uc", "platform", "data"]
+    prefixes = ["agency", "cms", "benefits", "platform", "data"]
     suffixes = ["api", "worker", "store", "queue", "cache", "db", "func", "bucket"]
     envs = ["prod", "staging", "dev"]
     return f"{random.choice(prefixes)}-{random.choice(suffixes)}-{random.choice(envs)}"
@@ -250,9 +250,9 @@ def generate_column_data(col_name, col_type, row_count, table_name):
     if col_name.endswith("_id") and col_type == "string":
         return [fake.uuid4()[:12] for _ in range(row_count)]
 
-    # --- NI Numbers ---
+    # --- National ID Numbers ---
     if col_name in ("nino", "partner_nino"):
-        return [generate_nino() for _ in range(row_count)]
+        return [generate_national_id() for _ in range(row_count)]
 
     # --- Names ---
     if col_name in ("full_name", "paying_parent_name", "receiving_parent_name"):

@@ -47,7 +47,7 @@ class LambdaTargetsStack(cdk.Stack):
 
         self.glue_catalogue_fn = _lambda.Function(
             self, "GlueCatalogueFn",
-            function_name="dwp-demo-glue-target",
+            function_name="demo-glue-target",
             runtime=_lambda.Runtime.PYTHON_3_11,
             handler="handler.handler",
             code=_lambda.Code.from_asset("../targets/glue_catalogue"),
@@ -88,7 +88,7 @@ class LambdaTargetsStack(cdk.Stack):
 
         self.athena_query_fn = _lambda.Function(
             self, "AthenaQueryFn",
-            function_name="dwp-demo-athena-target",
+            function_name="demo-athena-target",
             runtime=_lambda.Runtime.PYTHON_3_11,
             handler="handler.handler",
             code=_lambda.Code.from_asset("../targets/athena_query"),
@@ -124,7 +124,7 @@ class LambdaTargetsStack(cdk.Stack):
 
         self.sagemaker_ml_fn = _lambda.Function(
             self, "SagemakerMlFn",
-            function_name="dwp-demo-sagemaker-target",
+            function_name="demo-sagemaker-target",
             runtime=_lambda.Runtime.PYTHON_3_11,
             handler="handler.handler",
             code=_lambda.Code.from_asset("../targets/sagemaker_ml"),
@@ -148,7 +148,7 @@ class LambdaTargetsStack(cdk.Stack):
 
         self.pii_classifier_fn = _lambda.Function(
             self, "PiiClassifierFn",
-            function_name="dwp-demo-pii-target",
+            function_name="demo-pii-target",
             runtime=_lambda.Runtime.PYTHON_3_11,
             handler="handler.handler",
             code=_lambda.Code.from_asset("../targets/pii_classifier"),
@@ -173,7 +173,7 @@ class LambdaTargetsStack(cdk.Stack):
 
         self.governance_kb_fn = _lambda.Function(
             self, "GovernanceKbFn",
-            function_name="dwp-demo-kb-target",
+            function_name="demo-kb-target",
             runtime=_lambda.Runtime.PYTHON_3_11,
             handler="handler.handler",
             code=_lambda.Code.from_asset("../targets/governance_kb"),
@@ -198,7 +198,7 @@ class LambdaTargetsStack(cdk.Stack):
 
         self.cloudtrail_audit_fn = _lambda.Function(
             self, "CloudTrailAuditFn",
-            function_name="dwp-demo-cloudtrail-target",
+            function_name="demo-cloudtrail-target",
             runtime=_lambda.Runtime.PYTHON_3_11,
             handler="handler.handler",
             code=_lambda.Code.from_asset("../targets/cloudtrail_audit"),

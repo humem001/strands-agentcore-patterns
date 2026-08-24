@@ -8,7 +8,7 @@
 
 ## 1. Purpose
 
-A conversational AI agent that gives DWP data analysts, caseworkers, and policy teams natural-language access to the department's data catalogue, governance policies, and ML assets — reducing dataset discovery time from months to seconds.
+A conversational AI agent that gives data analysts, case workers, and policy teams natural-language access to the department's data catalogue, governance policies, and ML assets — reducing dataset discovery time from months to seconds.
 
 The agent is hosted on **Bedrock AgentCore Runtime** (Strands SDK, CodeZip), streams reasoning steps live to a Streamlit UI, and orchestrates five backend tool targets via **AgentCore Gateway**.
 
@@ -99,7 +99,7 @@ All services confirmed available in **eu-west-2 (London)**:
 
 | ID | Requirement |
 |----|-------------|
-| FR-8.1 | The agent SHALL answer governance/compliance questions grounded in DWP policy documents. |
+| FR-8.1 | The agent SHALL answer governance/compliance questions grounded in agency policy documents. |
 | FR-8.2 | The target Lambda SHALL call Bedrock KB `retrieve` only (NOT `retrieve_and_generate`). |
 | FR-8.3 | The orchestrator SHALL synthesise answers and format citations from returned chunks. |
 | FR-8.4 | Answers SHALL include source document references. |
@@ -169,7 +169,7 @@ All services confirmed available in **eu-west-2 (London)**:
 
 | ID | Requirement |
 |----|-------------|
-| NFR-6.1 | 10 synthetic datasets — fully fictional (no real names, NINOs, or case references). |
+| NFR-6.1 | 10 synthetic datasets — fully fictional (no real names, national ID numbers, or case references). |
 | NFR-6.2 | A single YAML manifest SHALL drive both Glue table definitions and Parquet data generation. |
 | NFR-6.3 | SageMaker assets SHALL be metadata-only (no training). |
 | NFR-6.4 | Governance KB SHALL bundle static copies of policy documents (not fetched live). |
@@ -206,12 +206,12 @@ The system passes acceptance when ALL of the following scenarios produce correct
 |---|----------|-------------------|
 | AC-1 | "I'm new to the fraud team — what datasets are available?" | Returns relevant datasets (fraud_referral_outcomes, etc.) with descriptions |
 | AC-2 | "What columns are in the CMS payment history table?" | Returns full column list with types and descriptions |
-| AC-3 | "Which datasets contain National Insurance numbers?" | Identifies datasets with HIGH PII (nino column) with reasoning |
+| AC-3 | "Which datasets contain national identification numbers?" | Identifies datasets with HIGH PII (nino column) with reasoning |
 | AC-4 | "Where does the compliance prediction score come from?" | Shows lineage: cms_payment_history → SageMaker pipeline → cms_compliance_predictions |
 | AC-5 | "Generate a description for the jcs_chatbot_interactions table" | Produces FAIR-compliant metadata (write-back disabled) |
 | AC-6 | "I want to link fraud referrals to payment history — how?" | Suggests join on nino/case_id with caveats |
 | AC-7 | "Show me the top 10 cases with the highest non-compliance risk score" | Generates SQL, executes on Athena, returns rows + summary |
-| AC-8 | "Can I share Universal Credit claimant data with HMRC?" | Answers from policy docs with citations |
+| AC-8 | "Can I share benefit claimant data with an external agency?" | Answers from policy docs with citations |
 | AC-9 | "Find all HIGH PII datasets, show me their lineage, and tell me who owns them" | Multi-step: classify → lineage → owner for multiple datasets |
 | AC-10 | "What ML models do we have for fraud detection?" | Lists fraud-detection-v1 model with description |
 | AC-11 | "What data was the compliance predictor trained on, and where does that come from?" | Shows model → training data → source lineage chain |
@@ -228,7 +228,7 @@ The system passes acceptance when ALL of the following scenarios produce correct
 - Load testing, performance testing, mocked unit tests
 - Frontend hosting infrastructure (Streamlit runs locally)
 - Production hardening (rate limiting, WAF, monitoring dashboards)
-- Real DWP data or real personal information
+- Real personal information
 - Online Feature Store
 - Cross-region failover
 

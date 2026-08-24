@@ -112,7 +112,7 @@ Step 0.5 (GATE) ──▶ Step 1 ──▶ Step 2 ──▶ Step 3 ──▶ Ste
 | Field | Value |
 |-------|-------|
 | Type | Code |
-| Description | Create S3 buckets: (1) `dwp-demo-data-{account}` (Parquet datasets), (2) `dwp-demo-athena-results-{account}` (Athena output), (3) `dwp-demo-kb-source-{account}` (governance docs). All with `RemovalPolicy.DESTROY` + `auto_delete_objects=True`. Export ARNs. |
+| Description | Create S3 buckets: (1) `demo-data-{account}` (Parquet datasets), (2) `demo-athena-results-{account}` (Athena output), (3) `demo-kb-source-{account}` (governance docs). All with `RemovalPolicy.DESTROY` + `auto_delete_objects=True`. Export ARNs. |
 | Files | `infra/stacks/data_platform_stack.py` |
 | Acceptance | `cdk synth` produces S3 bucket resources with correct policies |
 | Depends on | T-1.2 |
@@ -122,7 +122,7 @@ Step 0.5 (GATE) ──▶ Step 1 ──▶ Step 2 ──▶ Step 3 ──▶ Ste
 | Field | Value |
 |-------|-------|
 | Type | Code |
-| Description | Add Glue Database (`dwp_data_catalogue`). Add Athena Workgroup (`dwp-demo-athena-wg`) with fixed `OutputLocation` pointing to the Athena results bucket. Export DB name and workgroup name. |
+| Description | Add Glue Database (`agency_data_catalogue`). Add Athena Workgroup (`demo-athena-wg`) with fixed `OutputLocation` pointing to the Athena results bucket. Export DB name and workgroup name. |
 | Files | `infra/stacks/data_platform_stack.py` |
 | Acceptance | Synth includes `AWS::Glue::Database` and `AWS::Athena::WorkGroup` |
 | Depends on | T-1.3 |
@@ -132,7 +132,7 @@ Step 0.5 (GATE) ──▶ Step 1 ──▶ Step 2 ──▶ Step 3 ──▶ Ste
 | Field | Value |
 |-------|-------|
 | Type | Code |
-| Description | Create User Pool (`dwp-demo-pool`), Resource Server (`dwp-demo-api` with scopes `runtime/invoke`, `gateway/tools`), two App Clients (inbound + M2M, both `ALLOW_CLIENT_CREDENTIALS`). Export: pool ID, pool ARN, issuer URL, both client IDs and secrets. |
+| Description | Create User Pool (`demo-pool`), Resource Server (`demo-api` with scopes `runtime/invoke`, `gateway/tools`), two App Clients (inbound + M2M, both `ALLOW_CLIENT_CREDENTIALS`). Export: pool ID, pool ARN, issuer URL, both client IDs and secrets. |
 | Files | `infra/stacks/cognito_stack.py` |
 | Acceptance | Synth includes Cognito resources; outputs include all required values |
 | Depends on | T-1.2 |
@@ -186,7 +186,7 @@ Step 0.5 (GATE) ──▶ Step 1 ──▶ Step 2 ──▶ Step 3 ──▶ Ste
 |-------|-------|
 | Type | Deploy |
 | Description | Run: (1) `python data/generate_parquet.py`, (2) `aws s3 sync data/parquet/ s3://{data-bucket}/`, (3) `python scripts/create_glue_tables.py`. Verify tables queryable via Athena. |
-| Acceptance | `SELECT * FROM dwp_data_catalogue.cms_payment_history LIMIT 5` returns rows in Athena |
+| Acceptance | `SELECT * FROM agency_data_catalogue.cms_payment_history LIMIT 5` returns rows in Athena |
 | Depends on | T-2.2, T-2.3 |
 
 ---
@@ -228,7 +228,7 @@ Step 0.5 (GATE) ──▶ Step 1 ──▶ Step 2 ──▶ Step 3 ──▶ Ste
 | Field | Value |
 |-------|-------|
 | Type | Code |
-| Description | Write/bundle 5 markdown files in `data/governance_docs/`: DWP Data Strategy, FAIR Principles, Data Sharing Policy (synthetic), AI Security Policy, Information Management Policy. Content from published gov.uk sources + one synthetic doc. |
+| Description | Write/bundle 5 markdown files in `data/governance_docs/`: Agency Data Strategy, FAIR Principles, Data Sharing Policy (synthetic), AI Security Policy, Information Management Policy. Content from published gov.uk sources + one synthetic doc. |
 | Files | `data/governance_docs/*.md` (5 files) |
 | Acceptance | 5 files present with substantive content (≥500 words each) |
 | Depends on | T-1.1 |
@@ -249,7 +249,7 @@ Step 0.5 (GATE) ──▶ Step 1 ──▶ Step 2 ──▶ Step 3 ──▶ Ste
 |-------|-------|
 | Type | Deploy |
 | Description | Deploy KB + ML stacks, upload governance docs, sync KB, register ML assets. |
-| Acceptance | KB retrieval returns chunks for "Can I share data with HMRC?"; SageMaker assets listed |
+| Acceptance | KB retrieval returns chunks for "Can I share data with external agency?"; SageMaker assets listed |
 | Depends on | T-3.1, T-3.2, T-3.3, T-3.4, T-3.5 |
 
 ---
@@ -364,7 +364,7 @@ Step 0.5 (GATE) ──▶ Step 1 ──▶ Step 2 ──▶ Step 3 ──▶ Ste
 | Field | Value |
 |-------|-------|
 | Type | Code |
-| Description | Write `agent/system_prompt.txt` instructing Claude to: act as DWP Data Intelligence Agent, use discovered tools, classify PII with reasoning, generate safe SQL (LIMIT 100, no DML/DDL), synthesise governance answers with citations, chain tools for multi-step queries, explain reasoning before acting. |
+| Description | Write `agent/system_prompt.txt` instructing Claude to: act as Data Intelligence Agent, use discovered tools, classify PII with reasoning, generate safe SQL (LIMIT 100, no DML/DDL), synthesise governance answers with citations, chain tools for multi-step queries, explain reasoning before acting. |
 | Files | `agent/system_prompt.txt` |
 | Acceptance | Prompt covers all 10 tools' usage patterns; includes safety rules |
 | Depends on | — |
@@ -428,7 +428,7 @@ Step 0.5 (GATE) ──▶ Step 1 ──▶ Step 2 ──▶ Step 3 ──▶ Ste
 | Type | Code |
 | Description | Write `teardown.sh` per design §8.2: agentcore destroy → empty S3 buckets → cdk destroy. Must explicitly handle: S3 Vectors store, KB, Gateway, Runtime, Cognito pool. |
 | Files | `teardown.sh` |
-| Acceptance | After running, `aws cloudformation list-stacks` shows no dwp-demo stacks; no ongoing charges |
+| Acceptance | After running, `aws cloudformation list-stacks` shows no demo stacks; no ongoing charges |
 | Depends on | T-6.3 |
 
 ### T-6.5: Write Integration Smoke Test

@@ -1,13 +1,13 @@
 # Data Catalogue & Governance Agent
 
-A conversational AI agent that gives data analysts, caseworkers and policy teams
+A conversational AI agent that gives data analysts, case workers and policy teams
 natural-language access to a data estate — finding datasets, understanding their
 contents, checking sensitivity, tracing lineage, querying live data and answering
 governance questions — with every reasoning step streamed live to the UI.
 
-The scenario is modelled on the UK **Department for Work and Pensions (DWP)**
-data estate. All data is **synthetic and fictional** — no real people, National
-Insurance numbers or case references.
+The scenario is modelled on a fictional **government social security agency**
+data estate. All data is **synthetic and fictional** — no real people, national
+identification numbers or case references.
 
 > This is one pattern in the `strands-agentcore-patterns` collection. It
 > demonstrates a **single Strands agent on Amazon Bedrock AgentCore Runtime**
@@ -83,13 +83,13 @@ as another Gateway target. The agent pattern doesn't change.
 
 | Capability | Tool | How it works | Example question |
 |---|---|---|---|
-| Dataset discovery | `search_catalogue` | Fetches all tables from Glue Data Catalog; the agent reasons over descriptions to find relevant datasets | "I'm building a dashboard for the Minister on fraud — what should I include?" |
+| Dataset discovery | `search_catalogue` | Fetches all tables from Glue Data Catalog; the agent reasons over descriptions to find relevant datasets | "I'm building a dashboard for the Director on fraud — what should I include?" |
 | Dataset detail | `get_dataset_detail` | Calls `glue.get_table()` to return full column schema, types, descriptions, owner, steward, and S3 location | "What columns are in the CMS payment history table?" |
-| PII classification | `classify_pii` | Returns column schema from Glue; the agent then classifies each column (NONE/LOW/MEDIUM/HIGH) using its own reasoning | "Which datasets contain National Insurance numbers?" |
+| PII classification | `classify_pii` | Returns column schema from Glue; the agent then classifies each column (NONE/LOW/MEDIUM/HIGH) using its own reasoning | "Which datasets contain national identification numbers?" |
 | Data lineage | `show_lineage` | Reads lineage metadata (upstream, downstream, transformation) stored in Glue table parameters | "Who owns the data behind the service performance KPIs?" |
 | Metadata generation | `generate_metadata` | Returns table schema from Glue; the agent generates FAIR-compliant descriptions (write-back disabled by default) | "The jcs_chatbot_interactions table has no description — generate FAIR-compliant metadata so we can publish it in the catalogue" |
 | Join recommendations | `suggest_joins` | Fetches all tables with their column names/types from Glue; the agent identifies common keys and recommends joins | "How do I link fraud referrals to payment history?" |
-| Live SQL query | `query_dataset` | Agent retrieves table schema via Glue, generates a SELECT query, then executes it on Athena (read-only, LIMIT 100) | "Show me Universal Credit payments over £100" |
+| Live SQL query | `query_dataset` | Agent retrieves table schema via Glue, generates a SELECT query, then executes it on Athena (read-only, LIMIT 100) | "Show me benefit payments over $100" |
 | Governance Q&A | `policy_search` | Calls Bedrock Knowledge Base `retrieve` to get relevant policy document chunks; the agent synthesises the answer with citations | "What happens if we discover a data breach in a HIGH PII dataset — what's the process?" |
 | ML asset discovery | `list_ml_models` | Lists SageMaker Model Registry groups and offline Feature Store groups | "We're being audited on our use of AI in decision-making — what models do we have, what data were they trained on, and can we trace it back to source?" |
 | ML asset detail | `describe_ml_asset` | Calls `describe_model_package` or `describe_feature_group` on SageMaker to return metrics, status, and data sources | "What accuracy does the fraud detection model achieve, and should we trust it for referral decisions?" |
@@ -187,7 +187,7 @@ strands-agentcore-datacatalogue/
 │   ├── generate_parquet.py   #   generates fictional Parquet from the manifest
 │   └── governance_docs/      #   5 synthetic policy docs for the Knowledge Base
 ├── frontend/
-│   ├── app.py                # Streamlit UI (GOV.UK styled, live reasoning panel)
+│   ├── app.py                # Streamlit UI (government-themed, live reasoning panel)
 │   └── run_ui.sh             #   launch helper
 ├── spike/                    # Step 0.5 streaming validation spike (proves SSE fidelity)
 ├── spec/                     # requirements.md, design.md, tasks.md
@@ -295,13 +295,13 @@ agentcore deploy \
   --env COGNITO_TOKEN_ENDPOINT=<token_endpoint> \
   --env COGNITO_M2M_CLIENT_ID=<m2m_client_id> \
   --env COGNITO_M2M_CLIENT_SECRET=<m2m_client_secret> \
-  --env COGNITO_M2M_SCOPE=dwp-demo-api/gateway.tools
+  --env COGNITO_M2M_SCOPE=demo-api/gateway.tools
 ```
 
 Verify end-to-end:
 
 ```bash
-agentcore invoke '{"prompt": "Which datasets contain National Insurance numbers?"}'
+agentcore invoke '{"prompt": "Which datasets contain national identification numbers?"}'
 ```
 
 ### Step 6 — Run the UI
@@ -325,9 +325,9 @@ conversation; the right panel streams each tool call and result live.
 **A good "wow" question** that chains five AWS services in one request:
 
 > *I'm a new data analyst joining the counter-fraud team. Find the fraud
-> datasets, tell me which ones contain National Insurance numbers, show me where
+> datasets, tell me which ones contain national identification numbers, show me where
 > that data comes from and who owns it, check whether I'm allowed to share it
-> with HMRC, and tell me what ML models we have for fraud detection.*
+> with an external agency, and tell me what ML models we have for fraud detection.*
 
 Watch the reasoning panel run `search_catalogue` → `classify_pii` →
 `show_lineage` → `policy_search` → `list_ml_models`, then synthesise a single
@@ -372,8 +372,8 @@ agentcore destroy
 
 ## Notes and caveats
 
-- **All data is synthetic.** The DWP framing is illustrative; there are no real
-  people, NINOs or case references.
+- **All data is synthetic.** The government agency framing is illustrative; there are no real
+  people, national identification numbers or case references.
 - **Testing is demo-level.** One integration smoke script over the 11 scenarios
   (with one retry + backoff each) — no mocked unit tests, no load testing.
 - **Lambda tool contract.** AgentCore Gateway passes the tool name via

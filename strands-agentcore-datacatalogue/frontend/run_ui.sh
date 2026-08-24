@@ -1,5 +1,5 @@
 #!/bin/bash
-# Launch the DWP Data Intelligence Agent UI locally against the deployed Runtime.
+# Launch the Data Intelligence Agent UI locally against the deployed Runtime.
 # Requires active AWS credentials (SigV4 inbound auth to the Runtime).
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")"

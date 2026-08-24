@@ -6,7 +6,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
 echo "============================================"
-echo "  DWP Data Intelligence Agent — Teardown"
+echo "  Data Intelligence Agent — Teardown"
 echo "  Region: $REGION"
 echo "============================================"
 echo ""

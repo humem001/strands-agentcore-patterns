@@ -1,7 +1,7 @@
 [
   {
     "name": "search_catalogue",
-    "description": "Search the DWP data catalogue for datasets matching a natural language query. Returns table names, descriptions, classifications, and owners.",
+    "description": "Search the agency data catalogue for datasets matching a natural language query. Returns table names, descriptions, classifications, and owners.",
     "inputSchema": {
       "type": "object",
       "properties": {

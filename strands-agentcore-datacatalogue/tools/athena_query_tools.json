@@ -1,7 +1,7 @@
 [
   {
     "name": "query_dataset",
-    "description": "Execute a SQL query on Amazon Athena against the DWP data catalogue. The orchestrator generates the SQL; this tool executes it and returns results.",
+    "description": "Execute a SQL query on Amazon Athena against the agency data catalogue. The orchestrator generates the SQL; this tool executes it and returns results.",
     "inputSchema": {
       "type": "object",
       "properties": {

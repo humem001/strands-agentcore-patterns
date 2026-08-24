@@ -1,6 +1,6 @@
 {
   "project": {
-    "name": "dwp-demo-agent"
+    "name": "demo-agent"
   },
   "agents": [
     {
@@ -16,7 +16,7 @@
   ],
   "gateways": [
     {
-      "name": "dwp-demo-gateway",
+      "name": "demo-gateway",
       "authorizerConfig": {
         "type": "CUSTOM_JWT",
         "jwtConfiguration": {
@@ -64,13 +64,13 @@
   ],
   "identityProviders": [
     {
-      "name": "dwp-demo-cognito",
+      "name": "demo-cognito",
       "type": "OAUTH2",
       "oauth2Config": {
         "tokenUrl": "{{COGNITO_TOKEN_ENDPOINT}}",
         "clientId": "{{COGNITO_M2M_CLIENT_ID}}",
         "clientSecret": "{{COGNITO_M2M_CLIENT_SECRET}}",
-        "scopes": ["dwp-demo-api/gateway.tools"]
+        "scopes": ["demo-api/gateway.tools"]
       }
     }
   ]
